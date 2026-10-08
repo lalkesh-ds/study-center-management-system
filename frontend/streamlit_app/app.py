@@ -1,6 +1,23 @@
+import sys
+from pathlib import Path
+
+# Add project root to sys.path to enable absolute imports
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+# Add app directory to sys.path for direct imports
+APP_DIR = Path(__file__).resolve().parent
+if str(APP_DIR) not in sys.path:
+    sys.path.insert(0, str(APP_DIR))
+
 import streamlit as st
 from datetime import date
-from frontend.streamlit_app.api_client import APIClient
+
+try:
+    from frontend.streamlit_app.api_client import APIClient
+except ImportError:
+    from api_client import APIClient
 
 # Streamlit Page Setup
 st.set_page_config(

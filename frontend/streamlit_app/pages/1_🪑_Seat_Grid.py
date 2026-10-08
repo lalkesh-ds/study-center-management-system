@@ -1,7 +1,23 @@
+import sys
+from pathlib import Path
+
+# Add project root and streamlit_app directory to sys.path
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+APP_DIR = Path(__file__).resolve().parent.parent
+if str(APP_DIR) not in sys.path:
+    sys.path.insert(0, str(APP_DIR))
+
 import streamlit as st
 from datetime import date
 import pandas as pd
-from frontend.streamlit_app.api_client import APIClient
+
+try:
+    from frontend.streamlit_app.api_client import APIClient
+except ImportError:
+    from api_client import APIClient
 
 st.set_page_config(page_title="Seat Grid - Smart Library", page_icon="🪑", layout="wide")
 
@@ -76,10 +92,18 @@ if searched_seat_info:
             st.markdown(f"**Locker**: {'🔐 Yes' if searched_seat_info.get('has_locker') else 'No'}")
         with sc2:
             st.markdown("#### Shift Status:")
-            st.markdown(f"- **Morning (07-11)**: {'🟢 Free' if searched_seat_info['morning_available'] else f'🔴 Occupied by {searched_seat_info.get(\"morning_occupied_by\", \"Unknown\")}'}")
-            st.markdown(f"- **Afternoon (11-15)**: {'🟢 Free' if searched_seat_info['afternoon_available'] else f'🔴 Occupied by {searched_seat_info.get(\"afternoon_occupied_by\", \"Unknown\")}'}")
-            st.markdown(f"- **Evening (15-23)**: {'🟢 Free' if searched_seat_info['evening_available'] else f'🔴 Occupied by {searched_seat_info.get(\"evening_occupied_by\", \"Unknown\")}'}")
-            st.markdown(f"- **Full Day (07-23)**: {'🟢 Free' if searched_seat_info['full_day_available'] else '🔴 Blocked'}")
+            m_occ = searched_seat_info.get("morning_occupied_by") or "Unknown"
+            a_occ = searched_seat_info.get("afternoon_occupied_by") or "Unknown"
+            e_occ = searched_seat_info.get("evening_occupied_by") or "Unknown"
+            m_status = "🟢 Free" if searched_seat_info["morning_available"] else f"🔴 Occupied by {m_occ}"
+            a_status = "🟢 Free" if searched_seat_info["afternoon_available"] else f"🔴 Occupied by {a_occ}"
+            e_status = "🟢 Free" if searched_seat_info["evening_available"] else f"🔴 Occupied by {e_occ}"
+            f_status = "🟢 Free" if searched_seat_info["full_day_available"] else "🔴 Blocked"
+
+            st.markdown(f"- **Morning (07-11)**: {m_status}")
+            st.markdown(f"- **Afternoon (11-15)**: {a_status}")
+            st.markdown(f"- **Evening (15-23)**: {e_status}")
+            st.markdown(f"- **Full Day (07-23)**: {f_status}")
         with sc3:
             st.markdown("#### Staff Actions:")
             if st.button(f"{'Disable (Mark Broken)' if searched_seat_info['is_active'] else 'Enable (Back to Service)'}", key=f"toggle_{search_seat}"):

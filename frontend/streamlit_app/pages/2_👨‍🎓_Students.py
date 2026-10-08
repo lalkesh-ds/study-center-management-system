@@ -1,6 +1,22 @@
+import sys
+from pathlib import Path
+
+# Add project root and streamlit_app directory to sys.path
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+APP_DIR = Path(__file__).resolve().parent.parent
+if str(APP_DIR) not in sys.path:
+    sys.path.insert(0, str(APP_DIR))
+
 import streamlit as st
 import pandas as pd
-from frontend.streamlit_app.api_client import APIClient
+
+try:
+    from frontend.streamlit_app.api_client import APIClient
+except ImportError:
+    from api_client import APIClient
 
 st.set_page_config(page_title="Students Directory - Smart Library", page_icon="👨‍🎓", layout="wide")
 
