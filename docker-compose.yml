@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL 15 Database Engine
+  # ---------------------------------------------------------------------------
+  db:
+    image: postgres:15-alpine
+    container_name: library_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_DB: library_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d library_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # FastAPI Application Backend
+  # ---------------------------------------------------------------------------
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: library_backend
+    restart: unless-stopped
+    command: >
+      sh -c "alembic upgrade head &&
+             python scripts/seed_data.py &&
+             uvicorn backend.app.main:app --host 0.0.0.0 --port 8000"
+    environment:
+      DATABASE_URL: postgresql+psycopg://postgres:postgrespassword@db:5432/library_db
+      SECRET_KEY: docker_compose_secure_development_secret_key_32_chars
+      ENVIRONMENT: production
+      DEBUG: "False"
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # ---------------------------------------------------------------------------
+  # Streamlit Front-Desk Portal
+  # ---------------------------------------------------------------------------
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: library_frontend
+    restart: unless-stopped
+    command: ["streamlit", "run", "frontend/streamlit_app/app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+    environment:
+      BACKEND_API_URL: http://backend:8000/api/v1
+    ports:
+      - "8501:8501"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

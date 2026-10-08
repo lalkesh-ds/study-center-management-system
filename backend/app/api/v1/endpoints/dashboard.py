@@ -61,3 +61,55 @@ def get_revenue_collection_report(
         raise ValidationException("Start date cannot be after end date.", code="INVALID_DATE_RANGE")
 
     return analytics_service.get_revenue_report(db=db, start_date=start_date, end_date=end_date)
+
+
+import csv
+import io
+from fastapi.responses import StreamingResponse
+from backend.app.models.payment import Payment
+
+@router.get("/reports/revenue/export")
+def export_revenue_csv(
+    start_date: Optional[date] = Query(None),
+    end_date: Optional[date] = Query(None),
+    db: Session = Depends(get_db)
+):
+    """
+    Exports payment transaction records as a downloadable CSV file.
+    """
+    if end_date is None:
+        end_date = date.today()
+    if start_date is None:
+        start_date = end_date - timedelta(days=30)
+
+    from datetime import datetime, time
+    from sqlalchemy import select
+    start_dt = datetime.combine(start_date, time.min)
+    end_dt = datetime.combine(end_date, time.max)
+
+    stmt = select(Payment).where(Payment.created_at >= start_dt, Payment.created_at <= end_dt).order_by(Payment.created_at.desc())
+    payments = db.execute(stmt).scalars().all()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["Receipt Number", "Payment ID", "Date", "Amount", "Payment Method", "Status", "Transaction Ref", "Void Reason"])
+
+    for p in payments:
+        writer.writerow([
+            p.receipt_number,
+            str(p.id),
+            p.created_at.strftime("%Y-%m-%d %H:%M:%S") if p.created_at else "",
+            f"{p.amount:.2f}",
+            p.payment_method,
+            p.status,
+            p.transaction_ref or "",
+            p.void_reason or ""
+        ])
+
+    output.seek(0)
+    filename = f"revenue_report_{start_date}_to_{end_date}.csv"
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )

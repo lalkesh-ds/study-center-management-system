@@ -83,6 +83,44 @@ def list_students(
     )
 
 
+import csv
+import io
+from fastapi.responses import StreamingResponse
+
+@router.get("/export")
+def export_students_csv(
+    search: Optional[str] = Query(None),
+    status: Optional[str] = Query(None),
+    db: Session = Depends(get_db)
+):
+    """
+    Exports student directory as a downloadable CSV file.
+    """
+    items, _ = student_repository.search_and_paginate(db, search=search, status=status, skip=0, limit=10000)
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["Student Code", "Full Name", "Mobile", "Email", "ID Proof Type", "ID Proof Number", "Status", "Registered Date"])
+
+    for s in items:
+        writer.writerow([
+            s.student_code,
+            s.full_name,
+            s.mobile,
+            s.email or "",
+            s.id_proof_type or "",
+            s.id_proof_number or "",
+            s.status,
+            s.created_at.strftime("%Y-%m-%d %H:%M:%S") if s.created_at else ""
+        ])
+
+    output.seek(0)
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=students_directory.csv"}
+    )
+
+
 @router.get("/{id}", response_model=StudentResponseSchema)
 def get_student_profile(
     id: UUID,
