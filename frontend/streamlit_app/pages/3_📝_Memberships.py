@@ -53,13 +53,18 @@ with tabs[0]:
     students = []
     try:
         students = api.get_students(limit=200)
+        if isinstance(students, dict):
+            students = students.get("items", [])
     except Exception:
         pass
 
     if not students:
         st.warning("No students registered yet. Please register a student first in the Students page.")
     else:
-        student_choices = {f"{s['full_name']} ({s['mobile_number']})": s["id"] for s in students}
+        student_choices = {
+            f"{s['full_name']} ({s.get('mobile_number') or s.get('mobile', 'No Mobile')})": s["id"]
+            for s in students
+        }
         
         col1, col2 = st.columns(2)
         with col1:
@@ -96,7 +101,7 @@ with tabs[0]:
         with pay_col3:
             txn_ref = st.text_input("Transaction / UPI Reference (Optional)", placeholder="e.g. UPI/123456789")
 
-        if st.button("🚀 Confirm and Book Desk Allocation", type="primary", use_container_width=True):
+        if st.button("🚀 Confirm and Book Desk Allocation", type="primary", width="stretch"):
             if start_date > end_date:
                 st.error("Start Date cannot be after End Date.")
             else:
@@ -127,6 +132,8 @@ with tabs[1]:
 
     try:
         active_memberships = api.get_memberships(status="ACTIVE", limit=100)
+        if isinstance(active_memberships, dict):
+            active_memberships = active_memberships.get("items", [])
     except Exception:
         active_memberships = []
 
@@ -134,7 +141,7 @@ with tabs[1]:
         st.info("No active memberships available for renewal.")
     else:
         mem_choices = {
-            f"Seat #{m['seat_number']} - {m['student_name']} ({m['shift_name']} | Ends {m['end_date']})": m
+            f"Seat #{m.get('seat_number', m.get('seat_id'))} - {m.get('student_name', 'Student')} ({m.get('shift_name', 'Shift')} | Ends {m.get('end_date')} )": m
             for m in active_memberships
         }
         selected_mem_key = st.selectbox("Select Active Subscription to Renew", list(mem_choices.keys()))
@@ -174,7 +181,7 @@ with tabs[1]:
         with r_pay2:
             r_pay_method = st.selectbox("Renewal Payment Method", ["CASH", "UPI", "CARD", "NET_BANKING"], key="r_pay_meth")
 
-        if st.button("🔄 Execute Subscription Renewal", type="primary", use_container_width=True):
+        if st.button("🔄 Execute Subscription Renewal", type="primary", width="stretch"):
             renewal_payload = {
                 "start_date": str(renew_start),
                 "end_date": str(renew_end),
@@ -199,6 +206,8 @@ with tabs[2]:
 
     try:
         active_list = api.get_memberships(status="ACTIVE", limit=100)
+        if isinstance(active_list, dict):
+            active_list = active_list.get("items", [])
     except Exception:
         active_list = []
 
@@ -206,14 +215,14 @@ with tabs[2]:
         st.info("No active memberships to cancel.")
     else:
         cancel_choices = {
-            f"Seat #{m['seat_number']} - {m['student_name']} ({m['shift_name']} | {m['start_date']} to {m['end_date']})": m
+            f"Seat #{m.get('seat_number', m.get('seat_id'))} - {m.get('student_name', 'Student')} ({m.get('shift_name', 'Shift')} | {m.get('start_date')} to {m.get('end_date')})": m
             for m in active_list
         }
         sel_cancel_key = st.selectbox("Select Subscription to Terminate", list(cancel_choices.keys()))
         cancel_target = cancel_choices[sel_cancel_key]
 
         cancel_reason = st.text_input("Mandatory Reason for Cancellation *", placeholder="e.g. Relocating, Exam completed, Medical reasons")
-        if st.button("⚠️ Confirm and Terminate Subscription", type="secondary", use_container_width=True):
+        if st.button("⚠️ Confirm and Terminate Subscription", type="secondary", width="stretch"):
             if not cancel_reason.strip():
                 st.error("Please enter a valid cancellation reason.")
             else:
@@ -234,24 +243,26 @@ with tabs[3]:
             status=status_filter if status_filter != "ALL" else None,
             limit=100
         )
+        if isinstance(all_mems, dict):
+            all_mems = all_mems.get("items", [])
         if not all_mems:
             st.info("No memberships match the criteria.")
         else:
             table_rows = []
             for m in all_mems:
                 table_rows.append({
-                    "Seat": f"#{m['seat_number']}",
-                    "Student": m["student_name"],
-                    "Shift": m["shift_name"],
-                    "Start Date": m["start_date"],
-                    "End Date": m["end_date"],
-                    "Status": m["status"],
-                    "Final Fee": f"₹{m['final_fee']}",
-                    "Paid": f"₹{m['paid_amount']}",
-                    "Due": f"₹{m['due_amount']}",
-                    "Payment State": m["payment_status"],
+                    "Seat": f"#{m.get('seat_number', m.get('seat_id', '—'))}",
+                    "Student": m.get("student_name", "—"),
+                    "Shift": m.get("shift_name", "—"),
+                    "Start Date": m.get("start_date", "—"),
+                    "End Date": m.get("end_date", "—"),
+                    "Status": m.get("status", "—"),
+                    "Final Fee": f"₹{m.get('final_fee', 0)}",
+                    "Paid": f"₹{m.get('total_paid', m.get('paid_amount', 0))}",
+                    "Due": f"₹{m.get('due_amount', 0)}",
+                    "Payment State": m.get("payment_status", "—"),
                 })
             df = pd.DataFrame(table_rows)
-            st.dataframe(df, use_container_width=True)
+            st.dataframe(df, width="stretch")
     except Exception as e:
         st.error(f"Failed to load memberships: {e}")

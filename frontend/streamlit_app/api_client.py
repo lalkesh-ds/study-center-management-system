@@ -68,7 +68,10 @@ class APIClient:
     def get_seats(self) -> List[Dict[str, Any]]:
         with httpx.Client(timeout=10.0) as client:
             resp = client.get(f"{self.base_url}/seats", headers=self._headers())
-            return self._handle_response(resp)
+            data = self._handle_response(resp)
+            if isinstance(data, dict) and "items" in data:
+                return data["items"]
+            return data if isinstance(data, list) else []
 
     def get_seat_availability(self, target_date: Optional[str] = None) -> List[Dict[str, Any]]:
         params = {}
@@ -76,7 +79,12 @@ class APIClient:
             params["target_date"] = target_date
         with httpx.Client(timeout=10.0) as client:
             resp = client.get(f"{self.base_url}/seats/availability", params=params, headers=self._headers())
-            return self._handle_response(resp)
+            data = self._handle_response(resp)
+            if isinstance(data, dict) and "items" in data:
+                return data["items"]
+            if isinstance(data, dict) and "seats" in data:
+                return data["seats"]
+            return data if isinstance(data, list) else []
 
     def toggle_seat_maintenance(self, seat_id: int) -> Dict[str, Any]:
         with httpx.Client(timeout=10.0) as client:
@@ -89,7 +97,10 @@ class APIClient:
     def get_shifts(self) -> List[Dict[str, Any]]:
         with httpx.Client(timeout=10.0) as client:
             resp = client.get(f"{self.base_url}/shifts", headers=self._headers())
-            return self._handle_response(resp)
+            data = self._handle_response(resp)
+            if isinstance(data, dict) and "items" in data:
+                return data["items"]
+            return data if isinstance(data, list) else []
 
     # -------------------------------------------------------------------------
     # Students
@@ -100,7 +111,10 @@ class APIClient:
             params["search"] = search
         with httpx.Client(timeout=10.0) as client:
             resp = client.get(f"{self.base_url}/students", params=params, headers=self._headers())
-            return self._handle_response(resp)
+            data = self._handle_response(resp)
+            if isinstance(data, dict) and "items" in data:
+                return data["items"]
+            return data if isinstance(data, list) else []
 
     def get_student(self, student_id: str) -> Dict[str, Any]:
         with httpx.Client(timeout=10.0) as client:
@@ -137,7 +151,10 @@ class APIClient:
             params["seat_id"] = seat_id
         with httpx.Client(timeout=10.0) as client:
             resp = client.get(f"{self.base_url}/memberships", params=params, headers=self._headers())
-            return self._handle_response(resp)
+            data = self._handle_response(resp)
+            if isinstance(data, dict) and "items" in data:
+                return data["items"]
+            return data if isinstance(data, list) else []
 
     def get_membership(self, membership_id: str) -> Dict[str, Any]:
         with httpx.Client(timeout=10.0) as client:
@@ -175,7 +192,10 @@ class APIClient:
     def get_membership_payments(self, membership_id: str) -> List[Dict[str, Any]]:
         with httpx.Client(timeout=10.0) as client:
             resp = client.get(f"{self.base_url}/memberships/{membership_id}/payments", headers=self._headers())
-            return self._handle_response(resp)
+            data = self._handle_response(resp)
+            if isinstance(data, dict) and "items" in data:
+                return data["items"]
+            return data if isinstance(data, list) else []
 
     # -------------------------------------------------------------------------
     # Attendance
@@ -196,7 +216,10 @@ class APIClient:
             params["attendance_date"] = attendance_date
         with httpx.Client(timeout=10.0) as client:
             resp = client.get(f"{self.base_url}/attendance/daily", params=params, headers=self._headers())
-            return self._handle_response(resp)
+            data = self._handle_response(resp)
+            if isinstance(data, dict) and "items" in data:
+                return data["items"]
+            return data if isinstance(data, list) else []
 
     # -------------------------------------------------------------------------
     # Dashboard & Analytics
@@ -211,8 +234,11 @@ class APIClient:
 
     def get_expiring_memberships(self, threshold_days: int = 3) -> List[Dict[str, Any]]:
         with httpx.Client(timeout=10.0) as client:
-            resp = client.get(f"{self.base_url}/reports/expiring", params={"threshold_days": threshold_days}, headers=self._headers())
-            return self._handle_response(resp)
+            resp = client.get(f"{self.base_url}/reports/expiring", params={"days_threshold": threshold_days}, headers=self._headers())
+            data = self._handle_response(resp)
+            if isinstance(data, dict) and "items" in data:
+                return data["items"]
+            return data if isinstance(data, list) else []
 
     def get_revenue_report(self, start_date: Optional[str] = None, end_date: Optional[str] = None) -> Dict[str, Any]:
         params = {}

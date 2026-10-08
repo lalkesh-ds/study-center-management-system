@@ -181,5 +181,96 @@ class AllocationService:
             "seats": seat_matrix
         }
 
+    @staticmethod
+    def get_daily_seat_matrix(
+        db: Session,
+        target_date: date
+    ) -> List[Dict]:
+        """
+        Generates complete 100-seat multi-shift allocation perspective for a single calendar date.
+        Returns:
+            List of 100 seat dictionaries with per-shift availability flags and occupant names.
+        """
+        from sqlalchemy.orm import joinedload
+        seats = list(db.scalars(select(Seat).order_by(Seat.seat_number.asc())).all())
+
+        stmt = (
+            select(Membership)
+            .where(
+                and_(
+                    Membership.status == "ACTIVE",
+                    Membership.start_date <= target_date,
+                    Membership.end_date >= target_date
+                )
+            )
+            .options(joinedload(Membership.student), joinedload(Membership.shift))
+        )
+        active_memberships = list(db.scalars(stmt).all())
+
+        mems_by_seat: Dict[int, List[Membership]] = {}
+        for m in active_memberships:
+            mems_by_seat.setdefault(m.seat_id, []).append(m)
+
+        matrix = []
+        for seat in seats:
+            if not seat.is_active:
+                matrix.append({
+                    "seat_id": seat.id,
+                    "seat_number": seat.seat_number,
+                    "is_active": False,
+                    "has_power_outlet": seat.has_power_outlet,
+                    "has_locker": seat.has_locker,
+                    "morning_available": False,
+                    "morning_occupied_by": None,
+                    "afternoon_available": False,
+                    "afternoon_occupied_by": None,
+                    "evening_available": False,
+                    "evening_occupied_by": None,
+                    "full_day_available": False
+                })
+                continue
+
+            seat_mems = mems_by_seat.get(seat.id, [])
+            morning_available = True
+            morning_occ = None
+            afternoon_available = True
+            afternoon_occ = None
+            evening_available = True
+            evening_occ = None
+
+            for m in seat_mems:
+                student_name = m.student.full_name if m.student else "Student"
+                # Morning: 420 to 660 (07:00 to 11:00)
+                if m.start_minute < 660 and m.end_minute > 420:
+                    morning_available = False
+                    morning_occ = student_name
+                # Afternoon: 660 to 900 (11:00 to 15:00)
+                if m.start_minute < 900 and m.end_minute > 660:
+                    afternoon_available = False
+                    afternoon_occ = student_name
+                # Evening: 900 to 1380 (15:00 to 23:00)
+                if m.start_minute < 1380 and m.end_minute > 900:
+                    evening_available = False
+                    evening_occ = student_name
+
+            full_day_available = morning_available and afternoon_available and evening_available
+
+            matrix.append({
+                "seat_id": seat.id,
+                "seat_number": seat.seat_number,
+                "is_active": True,
+                "has_power_outlet": seat.has_power_outlet,
+                "has_locker": seat.has_locker,
+                "morning_available": morning_available,
+                "morning_occupied_by": morning_occ,
+                "afternoon_available": afternoon_available,
+                "afternoon_occupied_by": afternoon_occ,
+                "evening_available": evening_available,
+                "evening_occupied_by": evening_occ,
+                "full_day_available": full_day_available
+            })
+
+        return matrix
+
 
 allocation_service = AllocationService()

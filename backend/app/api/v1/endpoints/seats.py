@@ -24,31 +24,62 @@ def list_seats(
 
 @router.get("/availability")
 def get_seat_availability(
-    start_date: date = Query(..., description="Target start date (inclusive)"),
-    end_date: date = Query(..., description="Target end date (inclusive)"),
-    shift_id: int = Query(..., description="Operating shift identifier (1 to 4)"),
+    start_date: Optional[date] = Query(None, description="Target start date (inclusive)"),
+    end_date: Optional[date] = Query(None, description="Target end date (inclusive)"),
+    shift_id: Optional[int] = Query(None, description="Operating shift identifier (1 to 4)"),
+    target_date: Optional[date] = Query(None, description="Single target date evaluation (defaults to today)"),
     db: Session = Depends(get_db)
 ):
     """
-    Returns real-time 100-seat occupancy matrix for a requested shift and date range.
+    Returns real-time 100-seat occupancy matrix:
+    - If shift_id is provided: returns single-shift matrix for [start_date, end_date].
+    - If shift_id is not provided: returns comprehensive multi-shift perspective for target_date.
     """
     from backend.app.core.exceptions import ValidationException, NotFoundException
     from backend.app.models.shift import Shift
     from backend.app.services.allocation_service import allocation_service
 
-    if start_date > end_date:
-        raise ValidationException("Start date cannot be after end date.", code="INVALID_DATE_RANGE")
+    if shift_id is not None:
+        s_date = start_date or target_date or date.today()
+        e_date = end_date or target_date or s_date
+        if s_date > e_date:
+            raise ValidationException("Start date cannot be after end date.", code="INVALID_DATE_RANGE")
 
-    shift = db.get(Shift, shift_id)
-    if not shift:
-        raise NotFoundException(f"Shift with ID {shift_id} not found.", code="SHIFT_NOT_FOUND")
+        shift = db.get(Shift, shift_id)
+        if not shift:
+            raise NotFoundException(f"Shift with ID {shift_id} not found.", code="SHIFT_NOT_FOUND")
 
-    return allocation_service.get_seat_availability_matrix(
+        return allocation_service.get_seat_availability_matrix(
+            db=db,
+            start_date=s_date,
+            end_date=e_date,
+            shift_id=shift_id
+        )
+
+    # Multi-shift comprehensive floor map perspective
+    eval_date = target_date or start_date or date.today()
+    return allocation_service.get_daily_seat_matrix(
         db=db,
-        start_date=start_date,
-        end_date=end_date,
-        shift_id=shift_id
+        target_date=eval_date
     )
+
+
+@router.put("/{id}/toggle-maintenance", response_model=SeatResponseSchema)
+def toggle_seat_maintenance(
+    id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    Toggles physical seat maintenance state between active and under maintenance.
+    """
+    seat = seat_repository.get_by_id(db, id)
+    if not seat:
+        raise NotFoundException(f"Seat #{id} does not exist in inventory.", code="SEAT_NOT_FOUND")
+
+    seat.is_active = not seat.is_active
+    db.commit()
+    db.refresh(seat)
+    return seat
 
 
 @router.get("/{id}", response_model=SeatResponseSchema)

@@ -44,22 +44,25 @@ with tabs[0]:
 
     try:
         students = api.get_students(search=search_query if search_query else None, limit=limit)
+        if isinstance(students, dict):
+            students = students.get("items", [])
         if not students:
             st.info("No student records found matching search criteria.")
         else:
             table_data = []
             for s in students:
+                mobile = s.get("mobile_number") or s.get("mobile") or "—"
                 table_data.append({
                     "Student ID": str(s["id"])[:8] + "...",
                     "Full Name": s["full_name"],
-                    "Mobile Number": s["mobile_number"],
+                    "Mobile Number": mobile,
                     "Email": s.get("email") or "—",
                     "Status": "🟢 Active" if s.get("is_active", True) else "🔴 Inactive",
-                    "Registered On": s["created_at"][:10],
+                    "Registered On": str(s.get("created_at", ""))[:10],
                     "_id": s["id"]
                 })
             df = pd.DataFrame(table_data)
-            st.dataframe(df[["Full Name", "Mobile Number", "Email", "Status", "Registered On"]], use_container_width=True)
+            st.dataframe(df[["Full Name", "Mobile Number", "Email", "Status", "Registered On"]], width="stretch")
 
     except Exception as e:
         st.error(f"Failed to fetch students: {e}")
@@ -80,7 +83,7 @@ with tabs[1]:
             id_proof_number = st.text_input("ID Proof Number (Optional)", placeholder="e.g. 1234-5678-9012")
             address = st.text_area("Residential Address (Optional)", placeholder="Street, City, Pincode")
 
-        submitted = st.form_submit_button("Register Student", use_container_width=True)
+        submitted = st.form_submit_button("Register Student", width="stretch")
         if submitted:
             if not full_name or not mobile_number:
                 st.error("Please fill in both Full Name and Mobile Number.")
@@ -110,13 +113,18 @@ with tabs[2]:
     all_students = []
     try:
         all_students = api.get_students(limit=100)
+        if isinstance(all_students, dict):
+            all_students = all_students.get("items", [])
     except Exception:
         pass
 
     if not all_students:
         st.warning("No students available to select.")
     else:
-        student_options = {f"{s['full_name']} ({s['mobile_number']})": s["id"] for s in all_students}
+        student_options = {
+            f"{s['full_name']} ({s.get('mobile_number') or s.get('mobile', 'No Mobile')})": s["id"]
+            for s in all_students
+        }
         selected_label = st.selectbox("Select Student", list(student_options.keys()))
         selected_student_id = student_options[selected_label]
 
@@ -125,7 +133,8 @@ with tabs[2]:
             sp1, sp2 = st.columns(2)
             with sp1:
                 st.markdown(f"### {student_profile['full_name']}")
-                st.markdown(f"📱 **Mobile**: `{student_profile['mobile_number']}`")
+                mobile_disp = student_profile.get('mobile_number') or student_profile.get('mobile', '—')
+                st.markdown(f"📱 **Mobile**: `{mobile_disp}`")
                 st.markdown(f"✉️ **Email**: `{student_profile.get('email') or 'Not Provided'}`")
                 st.markdown(f"🆔 **ID Document**: {student_profile.get('id_proof_type') or 'N/A'} - `{student_profile.get('id_proof_number') or 'N/A'}`")
                 st.markdown(f"🏠 **Address**: {student_profile.get('address') or 'N/A'}")
@@ -133,16 +142,20 @@ with tabs[2]:
             with sp2:
                 # Memberships for this student
                 memberships = api.get_memberships(student_id=selected_student_id)
+                if isinstance(memberships, dict):
+                    memberships = memberships.get("items", [])
                 st.markdown(f"### 📋 Membership Subscriptions ({len(memberships)})")
                 if not memberships:
                     st.info("No memberships booked for this student yet.")
                 else:
                     for m in memberships:
                         status_color = "🟢" if m["status"] == "ACTIVE" else "🔴"
+                        paid_disp = m.get('total_paid', m.get('paid_amount', 0))
+                        due_disp = m.get('due_amount', 0)
                         st.markdown(
                             f"- {status_color} **Seat #{m['seat_number']}** ({m['shift_name']}) | "
                             f"{m['start_date']} to {m['end_date']} | "
-                            f"Fee: ₹{m['final_fee']} (Paid: ₹{m['paid_amount']}, Due: ₹{m['due_amount']})"
+                            f"Fee: ₹{m['final_fee']} (Paid: ₹{paid_disp}, Due: ₹{due_disp})"
                         )
         except Exception as err:
             st.error(f"Error fetching profile: {err}")

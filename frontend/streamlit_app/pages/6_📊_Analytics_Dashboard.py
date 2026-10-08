@@ -91,7 +91,7 @@ with tabs[0]:
                     color_discrete_sequence=px.colors.qualitative.Prism
                 )
                 fig_pie.update_layout(margin=dict(t=10, b=10, l=10, r=10))
-                st.plotly_chart(fig_pie, use_container_width=True)
+                st.plotly_chart(fig_pie, width="stretch")
             else:
                 st.info("No active subscriptions logged for this date.")
 
@@ -114,7 +114,7 @@ with tabs[0]:
                 yaxis=dict(range=[0, 100], title="Occupancy Percentage (%)"),
                 margin=dict(t=10, b=10, l=10, r=10)
             )
-            st.plotly_chart(fig_bar, use_container_width=True)
+            st.plotly_chart(fig_bar, width="stretch")
 
     except Exception as e:
         st.error(f"Failed to fetch summary: {e}")
@@ -130,6 +130,8 @@ with tabs[1]:
 
     try:
         expiring = api.get_expiring_memberships(threshold_days=threshold)
+        if isinstance(expiring, dict):
+            expiring = expiring.get("items", [])
         if not expiring:
             st.success(f"🎉 No subscriptions expiring within the next {threshold} days!")
         else:
@@ -139,13 +141,13 @@ with tabs[1]:
                 q_rows.append({
                     "Days Left": f"🔴 {item['days_remaining']} days" if item['days_remaining'] <= 1 else f"🟡 {item['days_remaining']} days",
                     "Student Name": item["student_name"],
-                    "Mobile": item["student_mobile"],
+                    "Mobile": item.get("student_mobile") or item.get("mobile", "—"),
                     "Seat": f"#{item['seat_number']}",
                     "Shift": item["shift_name"],
                     "End Date": item["end_date"],
-                    "Due Balance": f"₹{item['due_amount']}"
+                    "Due Balance": f"₹{item.get('due_amount', 0)}"
                 })
-            st.dataframe(pd.DataFrame(q_rows), use_container_width=True)
+            st.dataframe(pd.DataFrame(q_rows), width="stretch")
     except Exception as e:
         st.error(f"Error fetching expiring queue: {e}")
 
@@ -188,12 +190,12 @@ with tabs[2]:
                     text="Revenue (₹)"
                 )
                 fig_m.update_traces(texttemplate='₹%{text:.2f}', textposition='outside')
-                st.plotly_chart(fig_m, use_container_width=True)
+                st.plotly_chart(fig_m, width="stretch")
 
             with b_col2:
                 st.markdown("#### Payment Channel Share")
                 fig_p = px.pie(df_meth, values="Revenue (₹)", names="Method", hole=0.4)
-                st.plotly_chart(fig_p, use_container_width=True)
+                st.plotly_chart(fig_p, width="stretch")
 
     except Exception as e:
         st.error(f"Failed to fetch revenue report: {e}")

@@ -56,7 +56,7 @@ def render_login_view():
         with st.form("login_form", clear_on_submit=False):
             username = st.text_input("Username", value="admin")
             password = st.text_input("Password", type="password", value="Admin@Library2026!")
-            submit = st.form_submit_button("Sign In to Terminal", use_container_width=True)
+            submit = st.form_submit_button("Sign In to Terminal", width="stretch")
 
             if submit:
                 try:
@@ -81,7 +81,7 @@ def render_main_view():
     # Sidebar Profile & Logout
     st.sidebar.markdown(f"### 👤 Logged In: **{user['full_name']}**")
     st.sidebar.markdown(f"**Role**: `{user['role']}` | **User**: `{user['username']}`")
-    if st.sidebar.button("🚪 Logout", use_container_width=True):
+    if st.sidebar.button("🚪 Logout", width="stretch"):
         st.session_state["token"] = None
         st.session_state["user"] = None
         api.set_token(None)

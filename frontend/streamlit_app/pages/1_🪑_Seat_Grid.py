@@ -148,6 +148,6 @@ for row in range(10):
         else:
             btn_label = f"#{seat_num} 🟢"
 
-        if cols[col].button(btn_label, key=f"grid_{seat_num}", use_container_width=True):
+        if cols[col].button(btn_label, key=f"grid_{seat_num}", width="stretch"):
             st.session_state["selected_seat_quick"] = seat_num
             st.info(f"Seat #{seat_num}: Morning={'Free' if s_data['morning_available'] else 'Occupied'}, Afternoon={'Free' if s_data['afternoon_available'] else 'Occupied'}, Evening={'Free' if s_data['evening_available'] else 'Occupied'}")

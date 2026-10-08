@@ -42,7 +42,9 @@ with tabs[0]:
     # Fetch memberships with due_amount > 0
     try:
         active_mems = api.get_memberships(status="ACTIVE", limit=200)
-        due_mems = [m for m in active_mems if float(m["due_amount"]) > 0]
+        if isinstance(active_mems, dict):
+            active_mems = active_mems.get("items", [])
+        due_mems = [m for m in active_mems if float(m.get("due_amount", 0)) > 0]
     except Exception as e:
         due_mems = []
         st.error(f"Error fetching dues: {e}")
@@ -53,7 +55,7 @@ with tabs[0]:
         st.warning(f"⚠️ {len(due_mems)} student subscriptions currently have pending fee balances.")
         
         due_choices = {
-            f"{m['student_name']} | Seat #{m['seat_number']} ({m['shift_name']}) | Due: ₹{m['due_amount']}": m
+            f"{m.get('student_name', 'Student')} | Seat #{m.get('seat_number', m.get('seat_id', '—'))} ({m.get('shift_name', 'Shift')}) | Due: ₹{m.get('due_amount', 0)}": m
             for m in due_mems
         }
         selected_due_key = st.selectbox("Select Student Account", list(due_choices.keys()))
@@ -61,22 +63,23 @@ with tabs[0]:
 
         dc1, dc2 = st.columns(2)
         with dc1:
-            st.markdown(f"### Student: **{target_due_mem['student_name']}**")
-            st.markdown(f"- **Seat**: `#{target_due_mem['seat_number']}` ({target_due_mem['shift_name']})")
-            st.markdown(f"- **Total Fee**: ₹{target_due_mem['final_fee']}")
-            st.markdown(f"- **Already Paid**: ₹{target_due_mem['paid_amount']}")
-            st.markdown(f"- **Pending Due**: :red[**₹{target_due_mem['due_amount']}**]")
+            st.markdown(f"### Student: **{target_due_mem.get('student_name', 'Student')}**")
+            st.markdown(f"- **Seat**: `#{target_due_mem.get('seat_number', target_due_mem.get('seat_id', '—'))}` ({target_due_mem.get('shift_name', 'Shift')})")
+            st.markdown(f"- **Total Fee**: ₹{target_due_mem.get('final_fee', 0)}")
+            paid_amount_disp = target_due_mem.get('total_paid', target_due_mem.get('paid_amount', 0))
+            st.markdown(f"- **Already Paid**: ₹{paid_amount_disp}")
+            st.markdown(f"- **Pending Due**: :red[**₹{target_due_mem.get('due_amount', 0)}**]")
 
         with dc2:
             st.markdown("### Record Installment")
             with st.form("collect_due_form", clear_on_submit=True):
-                max_due = float(target_due_mem['due_amount'])
+                max_due = float(target_due_mem.get('due_amount', 0))
                 pay_amount = st.number_input("Payment Amount (₹) *", min_value=1.0, max_value=max_due, value=max_due, step=50.0)
                 pay_method = st.selectbox("Payment Method *", ["CASH", "UPI", "CARD", "NET_BANKING"])
                 txn_ref = st.text_input("Transaction / UPI Reference", placeholder="e.g. UPI-REF-99210")
                 notes = st.text_input("Internal Remarks", placeholder="e.g. Second installment paid in cash")
 
-                submit_pay = st.form_submit_button("💳 Process Payment & Issue Receipt", type="primary", use_container_width=True)
+                submit_pay = st.form_submit_button("💳 Process Payment & Issue Receipt", type="primary", width="stretch")
                 if submit_pay:
                     payload = {
                         "membership_id": target_due_mem["id"],
@@ -122,18 +125,25 @@ with tabs[1]:
     # Pick a membership to view payments
     try:
         all_memberships = api.get_memberships(limit=100)
+        if isinstance(all_memberships, dict):
+            all_memberships = all_memberships.get("items", [])
     except Exception:
         all_memberships = []
 
     if not all_memberships:
         st.info("No memberships found.")
     else:
-        m_map = {f"Seat #{m['seat_number']} - {m['student_name']} ({m['shift_name']})": m for m in all_memberships}
+        m_map = {
+            f"Seat #{m.get('seat_number', m.get('seat_id', '—'))} - {m.get('student_name', 'Student')} ({m.get('shift_name', 'Shift')})": m
+            for m in all_memberships
+        }
         sel_m_key = st.selectbox("Inspect Ledger for Membership", list(m_map.keys()), key="ledger_select")
         chosen_m = m_map[sel_m_key]
 
         try:
             payments = api.get_membership_payments(chosen_m["id"])
+            if isinstance(payments, dict):
+                payments = payments.get("items", [])
             if not payments:
                 st.info("No payment records for this subscription yet.")
             else:
@@ -148,7 +158,7 @@ with tabs[1]:
                         "Date": p["created_at"][:19].replace("T", " "),
                         "Void Reason": p.get("void_reason") or "—"
                     })
-                st.dataframe(pd.DataFrame(p_rows), use_container_width=True)
+                st.dataframe(pd.DataFrame(p_rows), width="stretch")
         except Exception as e:
             st.error(f"Error loading payments: {e}")
 
