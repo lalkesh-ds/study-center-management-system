@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Smart Library Management System - Complete Backend Architecture Guide</title>
+<style>
+    @page {
+        size: A4;
+        margin: 18mm 16mm 18mm 16mm;
+        @bottom-right {
+            content: "Page " counter(page) " of " counter(pages);
+            font-size: 9pt;
+            color: #64748b;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+        @bottom-left {
+            content: "Smart Library Backend Architecture & Code Flow Guide";
+            font-size: 9pt;
+            color: #64748b;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+    }
+    
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        color: #1e293b;
+        line-height: 1.6;
+        font-size: 10.5pt;
+        background: #ffffff;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Cover Page */
+    .cover {
+        page-break-after: always;
+        height: 92vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 40px 20px;
+        box-sizing: border-box;
+    }
+    .badge {
+        display: inline-block;
+        align-self: flex-start;
+        background: #eff6ff;
+        color: #2563eb;
+        border: 1px solid #bfdbfe;
+        padding: 6px 14px;
+        border-radius: 9999px;
+        font-size: 10pt;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 24px;
+    }
+    .cover h1 {
+        font-size: 32pt;
+        line-height: 1.15;
+        color: #0f172a;
+        margin: 0 0 16px 0;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+    }
+    .cover h2 {
+        font-size: 15pt;
+        color: #475569;
+        font-weight: 500;
+        margin: 0 0 40px 0;
+        line-height: 1.4;
+    }
+    .meta-box {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 24px;
+        margin-top: auto;
+    }
+    .meta-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        font-size: 10pt;
+    }
+    .meta-item strong {
+        color: #0f172a;
+        display: block;
+        font-size: 8.5pt;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 3px;
+    }
+    .meta-item span {
+        color: #334155;
+        font-weight: 600;
+    }
+
+    /* Typography & Headers */
+    h1, h2, h3, h4 {
+        color: #0f172a;
+        font-weight: 700;
+        page-break-after: avoid;
+    }
+    h2 {
+        font-size: 18pt;
+        border-bottom: 2px solid #e2e8f0;
+        padding-bottom: 8px;
+        margin-top: 36px;
+        margin-bottom: 16px;
+    }
+    h3 {
+        font-size: 13pt;
+        margin-top: 24px;
+        margin-bottom: 10px;
+        color: #1e3a8a;
+    }
+    h4 {
+        font-size: 11pt;
+        margin-top: 16px;
+        margin-bottom: 6px;
+        color: #334155;
+    }
+    p {
+        margin: 0 0 12px 0;
+        color: #334155;
+    }
+
+    /* Cards & Callouts */
+    .callout {
+        border-left: 4px solid #3b82f6;
+        background: #f0fdf4;
+        border-color: #22c55e;
+        padding: 14px 18px;
+        border-radius: 0 8px 8px 0;
+        margin: 16px 0;
+        font-size: 10pt;
+    }
+    .callout-blue {
+        background: #f0f9ff;
+        border-color: #0284c7;
+    }
+    .callout-amber {
+        background: #fffbeb;
+        border-color: #f59e0b;
+    }
+    .callout-title {
+        font-weight: 700;
+        margin-bottom: 4px;
+        color: #0f172a;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    /* Tables */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 16px 0 24px 0;
+        font-size: 9.5pt;
+        page-break-inside: avoid;
+    }
+    th, td {
+        border: 1px solid #cbd5e1;
+        padding: 8px 12px;
+        text-align: left;
+        vertical-align: top;
+    }
+    th {
+        background: #f1f5f9;
+        color: #0f172a;
+        font-weight: 700;
+    }
+    tr:nth-child(even) td {
+        background: #f8fafc;
+    }
+
+    /* Code blocks */
+    pre, code {
+        font-family: 'Consolas', 'Courier New', monospace;
+    }
+    code {
+        background: #f1f5f9;
+        color: #0f172a;
+        padding: 2px 5px;
+        border-radius: 4px;
+        font-size: 9pt;
+    }
+    .file-badge {
+        font-family: 'Consolas', monospace;
+        background: #1e293b;
+        color: #f8fafc;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 9pt;
+        display: inline-block;
+        margin-bottom: 6px;
+    }
+
+    /* Diagram / Flow Chart representation */
+    .flow-container {
+        background: #f8fafc;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 16px;
+        margin: 16px 0;
+        page-break-inside: avoid;
+    }
+    .flow-step {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 12px;
+    }
+    .flow-step:last-child {
+        margin-bottom: 0;
+    }
+    .step-num {
+        background: #2563eb;
+        color: #ffffff;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 9pt;
+        font-weight: 700;
+        margin-right: 12px;
+        shrink: 0;
+    }
+    .step-content {
+        flex: 1;
+    }
+    .step-title {
+        font-weight: 700;
+        color: #0f172a;
+        font-size: 10pt;
+    }
+    .step-desc {
+        color: #475569;
+        font-size: 9pt;
+        margin: 2px 0 0 0;
+    }
+
+    .page-break {
+        page-break-before: always;
+    }
+</style>
+</head>
+<body>
+
+<!-- COVER PAGE -->
+<div class="cover">
+    <div class="badge">Comprehensive Architectural Documentation</div>
+    <h1>Smart Library & Study Center<br>Backend Complete Guide</h1>
+    <h2>Everything about how the backend works, why every single file was created, and the complete step-by-step code execution flow explained in simple words.</h2>
+    
+    <div class="meta-box">
+        <div class="meta-grid">
+            <div class="meta-item">
+                <strong>Project Domain</strong>
+                <span>Space-as-a-Service / 100-Seat Study Center OS</span>
+            </div>
+            <div class="meta-item">
+                <strong>Backend Framework</strong>
+                <span>Python 3.10+ / FastAPI / SQLAlchemy 2.0</span>
+            </div>
+            <div class="meta-item">
+                <strong>Architecture Pattern</strong>
+                <span>Layered Clean Architecture (Router &rarr; Service &rarr; Repo &rarr; Model)</span>
+            </div>
+            <div class="meta-item">
+                <strong>Database Engine</strong>
+                <span>PostgreSQL (with SQLite fallback) + Alembic</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SECTION 1: INTRODUCTION -->
+<h2>1. Introduction & The Core Business Problem</h2>
+<p>
+    Welcome! To understand this backend codebase easily, we first need to understand <strong>what real-world business problem this software solves</strong>.
+</p>
+
+<h3>1.1 Real-World Analogy: Study Center vs Traditional Library</h3>
+<div class="callout callout-blue">
+    <div class="callout-title">&#128218; Important Concept: We Don't Lend Books, We Rent Desks!</div>
+    <p>
+        In traditional college or public libraries, people borrow books and return them after a few weeks. 
+        <strong>However, this software is built for Study Centers / Reading Rooms (common for students preparing for UPSC, SSC, NEET, JEE).</strong>
+        These facilities do not lend books. They have <strong>100 physical study desks (Desk #1 to #100)</strong> with air conditioning, Wi-Fi, and power sockets. 
+        Because real estate rent is expensive, <strong>the owner rents out the SAME physical desk to different students during different times of the day!</strong>
+    </p>
+</div>
+
+<h3>1.2 The Canonical Shift Model</h3>
+<p>
+    The facility runs <strong>7 days a week, from 07:00 AM to 11:00 PM (16 hours every day)</strong>. Time is partitioned into 4 non-overlapping shifts:
+</p>
+<table>
+    <thead>
+        <tr>
+            <th>Shift Name</th>
+            <th>Operating Window</th>
+            <th>Minute Range [Start, End)</th>
+            <th>Daily Duration</th>
+            <th>Default Fee</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><strong>Morning</strong></td>
+            <td>07:00 AM – 11:00 AM</td>
+            <td>[420, 660)</td>
+            <td>4 Hours</td>
+            <td>&#8377;800 / month</td>
+        </tr>
+        <tr>
+            <td><strong>Afternoon</strong></td>
+            <td>11:00 AM – 03:00 PM</td>
+            <td>[660, 900)</td>
+            <td>4 Hours</td>
+            <td>&#8377;800 / month</td>
+        </tr>
+        <tr>
+            <td><strong>Evening</strong></td>
+            <td>03:00 PM – 11:00 PM</td>
+            <td>[900, 1380)</td>
+            <td>8 Hours</td>
+            <td>&#8377;1,200 / month</td>
+        </tr>
+        <tr>
+            <td><strong>Full Day</strong></td>
+            <td>07:00 AM – 11:00 PM</td>
+            <td>[420, 1380)</td>
+            <td>16 Hours</td>
+            <td>&#8377;2,200 / month</td>
+        </tr>
+    </tbody>
+</table>
+
+<h3>1.3 The Nightmarish Problems of Traditional Paper Registers</h3>
+<p>
+    When study center owners manage this using paper registers or Excel sheets, disaster happens:
+</p>
+<ul>
+    <li><strong>Double-Booking Desks:</strong> Two receptionists accidentally book Desk #15 for the Morning shift to two different students.</li>
+    <li><strong>Full Day Collisions:</strong> Student A takes Full Day on Desk #20. But a staff member forgets and books Student B on Desk #20 for the Evening shift. Both show up at 5:00 PM and fight for the chair!</li>
+    <li><strong>Expired Students Sneaking In:</strong> Subscriptions expire, but the front desk doesn't know who has expired today.</li>
+    <li><strong>Financial Drifts:</strong> Students pay partial fees, and the owner loses track of who owes how much money.</li>
+</ul>
+<p>
+    <strong>Our FastAPI Backend was engineered to solve every single one of these problems with mathematical certainty!</strong>
+</p>
+
+<!-- SECTION 2: ARCHITECTURAL PATTERN -->
+<div class="page-break"></div>
+<h2>2. Architecture Pattern: The 4-Layer Separation</h2>
+<p>
+    To make the backend bug-free, scalable, and easy to maintain, we followed the industry-standard <strong>Layered Clean Architecture</strong>. 
+    Code is never mixed together. Instead, every responsibility is assigned to a specific layer.
+</p>
+
+<div class="flow-container">
+    <div class="flow-step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+            <div class="step-title">HTTP & Routing Layer (<code>backend/app/api/v1/endpoints/</code>)</div>
+            <div class="step-desc">
+                <strong>The Reception Counter:</strong> Receives incoming HTTP requests from React or Streamlit, checks the user's login token, unpacks URL parameters, and passes data to the Service Layer.
+            </div>
+        </div>
+    </div>
+    <div class="flow-step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+            <div class="step-title">Schema Validation Layer (<code>backend/app/schemas/</code>)</div>
+            <div class="step-desc">
+                <strong>The Security Inspector (Pydantic):</strong> Validates that incoming data is clean (e.g. mobile number is digits, seat number is between 1 and 100, dates are valid). If data is wrong, it rejects it immediately before hitting the database.
+            </div>
+        </div>
+    </div>
+    <div class="flow-step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+            <div class="step-title">Domain Service Layer (<code>backend/app/services/</code>)</div>
+            <div class="step-desc">
+                <strong>The Core Brain & Business Logic:</strong> Contains all intelligent rules! Checks seat availability, prevents double booking using locks, calculates discounts, and coordinates multiple database actions atomically.
+            </div>
+        </div>
+    </div>
+    <div class="flow-step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+            <div class="step-title">Repository Layer (<code>backend/app/repositories/</code>)</div>
+            <div class="step-desc">
+                <strong>The Storekeeper (Data Access):</strong> Executes pure SQLAlchemy database queries (<code>SELECT</code>, <code>INSERT</code>, <code>UPDATE</code>). It doesn't know about HTTP or web requests—it only talks to tables.
+            </div>
+        </div>
+    </div>
+    <div class="flow-step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+            <div class="step-title">Database Model Layer (<code>backend/app/models/</code>)</div>
+            <div class="step-desc">
+                <strong>The Blueprints (SQLAlchemy ORM):</strong> Defines the physical tables in PostgreSQL/SQLite (Seats, Students, Memberships, Payments, Attendance).
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SECTION 3: FILE BY FILE GUIDE -->
+<div class="page-break"></div>
+<h2>3. Complete Directory-by-Directory & File-by-File Breakdown</h2>
+<p>
+    Here is an exhaustive explanation of every single directory and file in the backend, why it was created, and what it does.
+</p>
+
+<!-- 3.1 CORE -->
+<h3>3.1 The <code>backend/app/core/</code> Directory (Foundations & Security)</h3>
+<table>
+    <thead>
+        <tr>
+            <th>File Path</th>
+            <th>Why Was It Created?</th>
+            <th>What Code Is Inside & How It Works</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><span class="file-badge">core/config.py</span></td>
+            <td>To centralize all configuration settings, environment variables, database URLs, and secret keys in one place.</td>
+            <td>Uses Pydantic's <code>BaseSettings</code>. Reads <code>DATABASE_URL</code>, <code>SECRET_KEY</code>, <code>ACCESS_TOKEN_EXPIRE_MINUTES</code>, and <code>CORS_ORIGINS</code> from the <code>.env</code> file. Prevents hardcoding passwords in code.</td>
+        </tr>
+        <tr>
+            <td><span class="file-badge">core/security.py</span></td>
+            <td>To protect user passwords and handle authentication tokens.</td>
+            <td>Uses <code>passlib</code> with <code>bcrypt</code> to hash passwords (passwords are never saved in plain text!). Provides <code>verify_password()</code> and <code>create_access_token()</code> to generate cryptographic JWT tokens when staff log in.</td>
+        </tr>
+        <tr>
+            <td><span class="file-badge">core/exceptions.py</span></td>
+            <td>To define standard error responses so the frontend receives crystal-clear error messages instead of mysterious server crashes.</td>
+            <td>Defines custom exceptions like <code>NotFoundException</code>, <code>ConflictException</code>, <code>ValidationException</code>, and <code>UnauthorizedException</code>. Also contains FastAPI global exception handlers that format every error into a clean JSON object: <code>{"error": {"code": "...", "message": "..."}}</code>.</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- 3.2 DB -->
+<h3>3.2 The <code>backend/app/db/</code> Directory (Database Plumbing)</h3>
+<table>
+    <thead>
+        <tr>
+            <th>File Path</th>
+            <th>Why Was It Created?</th>
+            <th>What Code Is Inside & How It Works</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><span class="file-badge">db/base.py</span></td>
+            <td>To provide the base class for all database tables.</td>
+            <td>Exports SQLAlchemy's <code>DeclarativeBase</code>. Every model inherits from this so Alembic and SQLAlchemy know all tables in the project.</td>
+        </tr>
+        <tr>
+            <td><span class="file-badge">db/session.py</span></td>
+            <td>To establish and manage database connections and life-cycles.</td>
+            <td>Creates the database <code>engine</code> and <code>sessionmaker</code>. Exports the FastAPI dependency <code>get_db()</code> which opens a database session for each incoming request and automatically closes/cleans it up when the request finishes.</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- 3.3 MODELS -->
+<div class="page-break"></div>
+<h3>3.3 The <code>backend/app/models/</code> Directory (Database Tables)</h3>
+<p>
+    These files define the exact tables stored in your database.
+</p>
+<table>
+    <thead>
+        <tr>
+            <th>Model File</th>
+            <th>Database Table</th>
+            <th>What It Represents & Key Fields</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><span class="file-badge">models/user.py</span></td>
+            <td><code>users</code></td>
+            <td>Represents the library owner and staff accounts. Fields: <code>id</code>, <code>username</code>, <code>hashed_password</code>, <code>full_name</code>, <code>role</code> (<code>ADMIN</code> or <code>STAFF</code>), <code>is_active</code>.</td>
+        </tr>
+        <tr>
+            <td><span class="file-badge">models/student.py</span></td>
+            <td><code>students</code></td>
+            <td>Represents the students studying in the facility. Fields: <code>id</code>, <code>student_code</code> (e.g. STU-2026-0001), <code>full_name</code>, <code>mobile</code>, <code>email</code>, <code>id_proof_number</code> (Aadhaar/Voter ID), <code>status</code> (<code>ACTIVE</code>, <code>INACTIVE</code>, <code>BLOCKED</code>).</td>
+        </tr>
+        <tr>
+            <td><span class="file-badge">models/seat.py</span></td>
+            <td><code>seats</code></td>
+            <td>Represents the 100 physical desks. Fields: <code>id</code> (1 to 100), <code>seat_number</code>, <code>is_active</code> (False when broken or under maintenance), <code>has_power_outlet</code>, <code>has_locker</code>.</td>
+        </tr>
+        <tr>
+            <td><span class="file-badge">models/shift.py</span></td>
+            <td><code>shifts</code></td>
+            <td>Represents the 4 canonical time shifts. Fields: <code>id</code> (1 to 4), <code>name</code> (Morning, Afternoon, Evening, Full Day), <code>start_minute</code>, <code>end_minute</code>, <code>base_fee</code>.</td>
+        </tr>
+        <tr>
+            <td><span class="file-badge">models/membership.py</span></td>
+            <td><code>memberships</code></td>
+            <td><strong>The Core Booking Contract!</strong> Connects a student to a seat for a specific shift and date range. Fields: <code>id</code>, <code>student_id</code>, <code>seat_id</code>, <code>shift_id</code>, <code>start_date</code>, <code>end_date</code>, <code>start_minute</code>, <code>end_minute</code>, <code>discount_amount</code>, <code>final_fee</code>, <code>status</code> (<code>ACTIVE</code>, <code>CANCELLED</code>), <code>renewed_from_id</code>.</td>
+        </tr>
+        <tr>
+            <td><span class="file-badge">models/payment.py</span></td>
+            <td><code>payments</code></td>
+            <td><strong>Append-Only Financial Ledger!</strong> Tracks all rupee transactions. Fields: <code>id</code>, <code>membership_id</code>, <code>student_id</code>, <code>amount</code>, <code>payment_method</code> (<code>CASH</code>, <code>UPI</code>, <code>CARD</code>, <code>NET_BANKING</code>), <code>receipt_number</code> (e.g. RCP-20261009-0001), <code>status</code> (<code>COMPLETED</code>, <code>VOIDED</code>), <code>void_reason</code>.</td>
+        </tr>
+        <tr>
+            <td><span class="file-badge">models/attendance.py</span></td>
+            <td><code>attendances</code></td>
+            <td>Records physical daily entry and exit. Fields: <code>id</code>, <code>student_id</code>, <code>membership_id</code>, <code>attendance_date</code>, <code>check_in</code>, <code>check_out</code>, <code>status</code> (<code>PRESENT</code>, <code>CHECKED_OUT</code>), <code>duration_hours</code>.</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- 3.4 SCHEMAS -->
+<div class="page-break"></div>
+<h3>3.4 The <code>backend/app/schemas/</code> Directory (Data Validation & Contracts)</h3>
+<p>
+    Pydantic schemas ensure that any data sent by the browser or returned by the server strictly follows rules.
+</p>
+<table>
+    <thead>
+        <tr>
+            <th>Schema File</th>
+            <th>Primary Classes</th>
+            <th>Validation Rules & Purpose</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><span class="file-badge">schemas/common.py</span></td>
+            <td><code>PaginatedResponse</code>, <code>PaginationMeta</code></td>
+            <td>Standard envelope for paginated tables: <code>{"items": [...], "pagination": {"total": 50, "skip": 0, "limit": 20}}</code>.</td>
+        </tr>
+        <tr>
+            <td><span class="file-badge">schemas/student.py</span></td>
+            <td><code>StudentCreate</code>, <code>StudentUpdate</code>, <code>StudentResponse</code></td>
+            <td>Enforces full name length (2-100 characters), validates email format, checks mobile numbers.</td>
+        </tr>
+        <tr>
+            <td><span class="file-badge">schemas/membership.py</span></td>
+            <td><code>MembershipCreateSchema</code>, <code>MembershipRenewSchema</code>, <code>MembershipCancelSchema</code></td>
+            <td>Guarantees <code>start_date <= end_date</code>, validates that upfront payment has a valid payment method (CASH/UPI/CARD), enforces cancellation reason length.</td>
+        </tr>
+        <tr>
+            <td><span class="file-badge">schemas/seat.py</span></td>
+            <td><code>SeatResponseSchema</code>, <code>DailySeatMatrixItem</code></td>
+            <td>Defines the 100-desk floor grid structure returned to the front-desk UI (whether morning, afternoon, evening, or full day is available).</td>
+        </tr>
+        <tr>
+            <td><span class="file-badge">schemas/payment.py</span></td>
+            <td><code>PaymentCreateSchema</code>, <code>PaymentVoidSchema</code>, <code>ReceiptResponseSchema</code></td>
+            <td>Validates positive payment amounts (amount > 0), enforces valid channels (CASH, UPI, CARD, NET_BANKING), validates void reason for revoked transactions.</td>
+        </tr>
+        <tr>
+            <td><span class="file-badge">schemas/dashboard.py</span></td>
+            <td><code>DashboardSummarySchema</code>, <code>MembershipExpirySchema</code>, <code>RevenueReportSchema</code></td>
+            <td>Defines the exact KPIs returned on the executive dashboard: physical seat utilization rate, slot occupancy rate, seat-hour occupancy rate, and daily revenue.</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- 3.5 REPOSITORIES -->
+<h3>3.5 The <code>backend/app/repositories/</code> Directory (Database Storekeepers)</h3>
+<p>
+    These files write the raw SQL queries so the rest of the application remains clean and decoupled:
+</p>
+<ul>
+    <li><span class="file-badge">repositories/base.py</span>: Provides generic, reusable CRUD helpers (<code>get</code>, <code>get_multi</code>, <code>create</code>, <code>update</code>, <code>remove</code>) that all repositories inherit from.</li>
+    <li><span class="file-badge">repositories/student_repository.py</span>: Searches students by name, mobile, email, or code with case-insensitive <code>ilike</code> filters.</li>
+    <li><span class="file-badge">repositories/seat_repository.py</span>: Fetches physical seats filtered by active/maintenance state.</li>
+    <li><span class="file-badge">repositories/membership_repository.py</span>: Finds active memberships covering a specific date range, calculates financial balance (total fee &minus; total paid = pending due), and handles pagination.</li>
+    <li><span class="file-badge">repositories/payment_repository.py</span>: Queries transactions, computes daily collection totals, and filters by membership or date.</li>
+</ul>
+
+<!-- 3.6 SERVICES -->
+<div class="page-break"></div>
+<h3>3.6 The <code>backend/app/services/</code> Directory (The Brain of the System)</h3>
+<p>
+    This is where the true intelligence of the software lives.
+</p>
+
+<h4>1. <code>services/allocation_service.py</code> (The Anti-Collision Engine)</h4>
+<p>
+    This is the most critical service in the entire study center management system. It prevents double-booking using interval mathematics:
+</p>
+<ul>
+    <li><strong><code>check_seat_availability()</code>:</strong> When someone wants to book Desk #10 for Morning shift between Oct 1 and Oct 31, this function checks every active membership on Desk #10. If an existing student has booked Morning or Full Day on those dates, it says <code>False</code> and blocks the booking!</li>
+    <li><strong><code>check_student_time_conflict()</code>:</strong> Prevents a student from holding two different desks at the exact same hour of the day.</li>
+    <li><strong><code>get_daily_seat_matrix()</code>:</strong> Generates the live status of all 100 desks for the interactive seat grid on the frontend.</li>
+</ul>
+
+<h4>2. <code>services/membership_service.py</code> (Atomic Admission & Row Locking)</h4>
+<p>
+    Coordinates student admissions, renewals, and cancellations safely:
+</p>
+<ul>
+    <li><strong>Pessimistic Row Locking (<code>SELECT ... FOR UPDATE</code>):</strong> When two receptionists try to book Desk #1 at the exact same millisecond, the first request locks row #1 in the database. The second request is made to wait until the lock releases, completely preventing race conditions!</li>
+    <li><strong>Atomic Transactions:</strong> Creating the membership and recording the initial cash/UPI payment happen in a single database transaction. If recording the payment fails, the membership creation is automatically rolled back!</li>
+    <li><strong>Clean Renewal Lineage:</strong> When renewing, it links the new membership to the old one using <code>renewed_from_id</code>, maintaining student historical continuity.</li>
+</ul>
+
+<h4>3. <code>services/payment_service.py</code> (Financial Ledger & Voiding)</h4>
+<p>
+    Enforces strict accounting rules:
+</p>
+<ul>
+    <li>Generates unique sequential receipt numbers: <code>RCP-YYYYMMDD-XXXX</code> (e.g. <code>RCP-20261009-0001</code>).</li>
+    <li><strong>Never Deletes Records:</strong> If a cashier made an error entering a payment, the admin cannot delete the row. Instead, the admin must call <code>void_payment()</code> with a mandatory audit reason. The transaction status changes to <code>VOIDED</code> and the fee balance automatically reopens!</li>
+</ul>
+
+<h4>4. <code>services/analytics_service.py</code> (Executive KPI Calculations)</h4>
+<p>
+    Computes the 3 multidimensional capacity metrics:
+</p>
+<ul>
+    <li><strong>Physical Seat Utilization Rate:</strong> <code>(Occupied Desks / 100) * 100</code></li>
+    <li><strong>Slot-Capacity Occupancy Rate:</strong> <code>(Booked Slots / 300) * 100</code> (Full Day counts as 3 slots; Morning, Afternoon, Evening count as 1 slot).</li>
+    <li><strong>Time-Weighted Seat-Hour Rate:</strong> <code>(Booked Seat Hours / 1,600) * 100</code></li>
+</ul>
+
+<!-- 3.7 API / ROUTERS -->
+<div class="page-break"></div>
+<h3>3.7 The <code>backend/app/api/v1/</code> Directory (Web Endpoints / Routers)</h3>
+<p>
+    This directory exposes the clean RESTful API to your React and Streamlit frontends.
+</p>
+<table>
+    <thead>
+        <tr>
+            <th>Endpoint File</th>
+            <th>Base Path</th>
+            <th>Key REST Endpoints & Purpose</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><span class="file-badge">endpoints/auth.py</span></td>
+            <td><code>/api/v1/auth</code></td>
+            <td><code>POST /login</code> (Authenticates username and password, returns JWT token), <code>GET /me</code> (Returns logged-in user profile).</td>
+        </tr>
+        <tr>
+            <td><span class="file-badge">endpoints/students.py</span></td>
+            <td><code>/api/v1/students</code></td>
+            <td><code>GET /</code> (Search student directory), <code>POST /</code> (Register new aspirant), <code>GET /{id}</code> (View student KYC), <code>PUT /{id}</code> (Update contact info).</td>
+        </tr>
+        <tr>
+            <td><span class="file-badge">endpoints/seats.py</span></td>
+            <td><code>/api/v1/seats</code></td>
+            <td><code>GET /</code> (List 100 desks), <code>GET /availability</code> (100-desk real-time availability floor map), <code>PUT /{id}/toggle-maintenance</code> (Turn maintenance lock on/off).</td>
+        </tr>
+        <tr>
+            <td><span class="file-badge">endpoints/shifts.py</span></td>
+            <td><code>/api/v1/shifts</code></td>
+            <td><code>GET /</code> (Returns the 4 canonical shifts: Morning, Afternoon, Evening, Full Day with their hours and fees).</td>
+        </tr>
+        <tr>
+            <td><span class="file-badge">endpoints/memberships.py</span></td>
+            <td><code>/api/v1/memberships</code></td>
+            <td><code>POST /</code> (Book new seat admission), <code>GET /</code> (List subscriptions with status filters), <code>POST /{id}/renew</code> (Renew contract), <code>POST /{id}/cancel</code> (Cancel & free seat).</td>
+        </tr>
+        <tr>
+            <td><span class="file-badge">endpoints/payments.py</span></td>
+            <td><code>/api/v1/payments</code></td>
+            <td><code>POST /</code> (Cashier records fee payment), <code>GET /membership/{id}</code> (Ledger history), <code>POST /{id}/void</code> (Admin voids mistaken payment), <code>GET /export/csv</code> (Export accounts).</td>
+        </tr>
+        <tr>
+            <td><span class="file-badge">endpoints/attendance.py</span></td>
+            <td><code>/api/v1/attendance</code></td>
+            <td><code>POST /check-in</code> (Stamp student arrival), <code>POST /{id}/check-out</code> (Stamp departure), <code>GET /daily</code> (View daily attendance roster).</td>
+        </tr>
+        <tr>
+            <td><span class="file-badge">endpoints/dashboard.py</span></td>
+            <td><code>/api/v1/dashboard</code></td>
+            <td><code>GET /summary</code> (Returns 3 capacity KPIs, active students, pending dues), <code>GET /reports/expiring</code> (3-day expiry action queue), <code>GET /reports/revenue</code> (Collections by channel).</td>
+        </tr>
+        <tr>
+            <td><span class="file-badge">api/v1/router.py</span></td>
+            <td><code>/api/v1</code></td>
+            <td>Mounts all 9 endpoint routers together into a unified API root.</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- 3.8 MAIN.PY -->
+<h3>3.8 <code>backend/app/main.py</code> (The Application Entrypoint)</h3>
+<p>
+    This is the master entrypoint where FastAPI boots up:
+</p>
+<ul>
+    <li>Configures <strong>CORS (Cross-Origin Resource Sharing)</strong> so browsers running on <code>localhost:5173</code>, <code>192.168.0.197:5173</code>, or <code>localhost:8501</code> can securely talk to the API.</li>
+    <li>Registers the global custom exception handlers (<code>app_exception_handler</code> and <code>validation_exception_handler</code>).</li>
+    <li>Mounts the master <code>api_v1_router</code> under <code>/api/v1</code>.</li>
+    <li>Serves auto-generated interactive OpenAPI Swagger documentation at <code>/docs</code> and ReDoc at <code>/redoc</code>.</li>
+</ul>
+
+<!-- SECTION 4: REAL LIFE END TO END TRACE -->
+<div class="page-break"></div>
+<h2>4. Step-by-Step Code Flow: A Real Life Example</h2>
+<p>
+    Let's walk through an actual transaction to see how data flows through these files in real life!
+</p>
+<div class="callout callout-amber">
+    <div class="callout-title">&#128104;&#8205;&#127891; Real Scenario:</div>
+    <p>
+        Student <strong>"Rahul Sharma"</strong> walks up to the front desk. He wants to book <strong>Desk #10</strong> for the <strong>Morning Shift</strong> from <strong>Oct 10 to Nov 09</strong>. 
+        He pays <strong>&#8377;800 in Cash</strong> upfront. Receptionist clicks "Execute Admission & Confirm Desk".
+    </p>
+</div>
+
+<div class="flow-container">
+    <div class="flow-step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+            <div class="step-title">Browser Sends HTTP POST Request</div>
+            <div class="step-desc">
+                React sends: <code>POST /api/v1/memberships</code> with JSON payload: <code>{"student_id": "...", "seat_id": 10, "shift_id": 1, "start_date": "2026-10-10", "end_date": "2026-11-09", "initial_payment_amount": 800, "initial_payment_method": "CASH"}</code> along with the JWT Bearer Token.
+            </div>
+        </div>
+    </div>
+    <div class="flow-step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+            <div class="step-title">Security & Validation Layer Intercepts</div>
+            <div class="step-desc">
+                <code>core/security.py</code> verifies the JWT token. Then <code>schemas/membership.py (MembershipCreateSchema)</code> verifies that start date is before end date, seat is between 1 and 100, and initial payment method is valid.
+            </div>
+        </div>
+    </div>
+    <div class="flow-step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+            <div class="step-title">Endpoint Hands Off to MembershipService</div>
+            <div class="step-desc">
+                <code>api/v1/endpoints/memberships.py</code> receives the request and calls <code>membership_service.create_admission_atomic()</code>.
+            </div>
+        </div>
+    </div>
+    <div class="flow-step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+            <div class="step-title">Database Row Lock & Availability Check</div>
+            <div class="step-desc">
+                <code>membership_service.py</code> issues a <code>SELECT ... FOR UPDATE</code> on Seat #10 to lock the row. 
+                Then it calls <code>allocation_service.check_seat_availability()</code>. The allocation service queries existing memberships covering Oct 10–Nov 09. If another student already has Desk #10 in the Morning, it rejects with <code>ConflictException("Seat already booked")</code>!
+            </div>
+        </div>
+    </div>
+    <div class="flow-step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+            <div class="step-title">Student Simultaneous Collision Check</div>
+            <div class="step-desc">
+                The service calls <code>allocation_service.check_student_time_conflict()</code> to verify Rahul doesn't already hold another desk during morning hours.
+            </div>
+        </div>
+    </div>
+    <div class="flow-step">
+        <div class="step-num">6</div>
+        <div class="step-content">
+            <div class="step-title">Membership Created & Payment Stamped in Ledger</div>
+            <div class="step-desc">
+                The service creates the <code>Membership</code> record. Since Rahul paid &#8377;800 cash, it generates sequential receipt number <code>RCP-20261010-0015</code> and creates a <code>Payment</code> record with status <code>COMPLETED</code>.
+            </div>
+        </div>
+    </div>
+    <div class="flow-step">
+        <div class="step-num">7</div>
+        <div class="step-content">
+            <div class="step-title">Transaction Committed & Enriched Response Returned</div>
+            <div class="step-desc">
+                <code>db.commit()</code> saves everything safely to disk. The endpoint formats the response with derived status <code>ACTIVE</code>, <code>total_paid: 800.00</code>, <code>due_amount: 0.00</code>, and returns HTTP 201 Created to the browser!
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SECTION 5: CHEAT SHEET -->
+<div class="page-break"></div>
+<h2>5. Developer Quick Reference Matrix</h2>
+<p>
+    Keep this summary table handy whenever you need to locate code quickly:
+</p>
+<table>
+    <thead>
+        <tr>
+            <th>If You Need To Modify Or Inspect...</th>
+            <th>Go To This Exact File</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Double-booking rules or shift collision algorithms</td>
+            <td><code>backend/app/services/allocation_service.py</code></td>
+        </tr>
+        <tr>
+            <td>How admissions, renewals, or cancellations are saved</td>
+            <td><code>backend/app/services/membership_service.py</code></td>
+        </tr>
+        <tr>
+            <td>Receipt numbering or payment voiding rules</td>
+            <td><code>backend/app/services/payment_service.py</code></td>
+        </tr>
+        <tr>
+            <td>Executive capacity formulas (Physical %, Slot %, Seat-Hours)</td>
+            <td><code>backend/app/services/analytics_service.py</code></td>
+        </tr>
+        <tr>
+            <td>Database table columns or relationships</td>
+            <td><code>backend/app/models/*.py</code></td>
+        </tr>
+        <tr>
+            <td>Request payloads or field validation errors</td>
+            <td><code>backend/app/schemas/*.py</code></td>
+        </tr>
+        <tr>
+            <td>API routes, URL paths, or query parameters</td>
+            <td><code>backend/app/api/v1/endpoints/*.py</code></td>
+        </tr>
+        <tr>
+            <td>JWT tokens, password hashing, bcrypt settings</td>
+            <td><code>backend/app/core/security.py</code></td>
+        </tr>
+        <tr>
+            <td>Database connection strings and environment variables</td>
+            <td><code>backend/app/core/config.py</code> and <code>backend/app/db/session.py</code></td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="callout callout-blue">
+    <div class="callout-title">&#10004; Architectural Guarantee</div>
+    <p>
+        Every single invariant in this system is enforced at the database and service layer. No matter what frontends connect in the future (React, Flutter mobile app, kiosk hardware, or biometric scanners), the business rules, double-booking prevention, and financial integrity remain 100% guaranteed!
+    </p>
+</div>
+
+</body>
+</html>

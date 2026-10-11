@@ -1,7 +1,8 @@
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 from typing import List, Optional
-from sqlalchemy import select, func, and_, cast, Date
+import uuid
+from sqlalchemy import select, func, and_, or_, cast, Date
 from sqlalchemy.orm import Session, joinedload
 
 from backend.app.models.seat import Seat
@@ -26,7 +27,8 @@ class AnalyticsService:
     def get_dashboard_summary(
         cls,
         db: Session,
-        target_date: Optional[date] = None
+        target_date: Optional[date] = None,
+        owner_id: Optional[uuid.UUID] = None
     ) -> DashboardSummarySchema:
         """
         Computes the three core capacity metrics (Physical Utilization, Slot Occupancy,
@@ -35,16 +37,18 @@ class AnalyticsService:
         today = target_date or date.today()
 
         # 1. Fetch active memberships covering target date
+        active_conditions = [
+            Membership.status == "ACTIVE",
+            Membership.start_date <= today,
+            Membership.end_date >= today
+        ]
+        if owner_id:
+            active_conditions.append(Membership.created_by == owner_id)
+
         active_stmt = (
             select(Membership)
             .options(joinedload(Membership.shift))
-            .where(
-                and_(
-                    Membership.status == "ACTIVE",
-                    Membership.start_date <= today,
-                    Membership.end_date >= today
-                )
-            )
+            .where(and_(*active_conditions))
         )
         active_mems = list(db.scalars(active_stmt).all())
 
@@ -71,24 +75,35 @@ class AnalyticsService:
 
         # Expired in last 7 days without renewal
         past_week = today - timedelta(days=7)
-        expired_stmt = select(func.count()).select_from(Membership).where(
-            and_(
-                Membership.status == "ACTIVE",
-                Membership.end_date < today,
-                Membership.end_date >= past_week
-            )
-        )
+        expired_conditions = [
+            Membership.status == "ACTIVE",
+            Membership.end_date < today,
+            Membership.end_date >= past_week
+        ]
+        if owner_id:
+            expired_conditions.append(Membership.created_by == owner_id)
+
+        expired_stmt = select(func.count()).select_from(Membership).where(and_(*expired_conditions))
         expired_count = db.scalar(expired_stmt) or 0
 
         # Daily Realized Revenue (Payments completed today)
         today_start = datetime.combine(today, datetime.min.time())
         today_end = datetime.combine(today, datetime.max.time())
-        daily_rev_stmt = select(func.coalesce(func.sum(Payment.amount), Decimal("0.00"))).where(
-            and_(
-                Payment.status == "COMPLETED",
-                Payment.created_at >= today_start,
-                Payment.created_at <= today_end
+        daily_rev_conditions = [
+            Payment.status == "COMPLETED",
+            Payment.created_at >= today_start,
+            Payment.created_at <= today_end
+        ]
+        if owner_id:
+            daily_rev_conditions.append(
+                or_(
+                    Payment.received_by == owner_id,
+                    Payment.membership.has(Membership.created_by == owner_id)
+                )
             )
+
+        daily_rev_stmt = select(func.coalesce(func.sum(Payment.amount), Decimal("0.00"))).where(
+            and_(*daily_rev_conditions)
         )
         daily_revenue = Decimal(str(db.scalar(daily_rev_stmt) or Decimal("0.00")))
 
@@ -121,13 +136,22 @@ class AnalyticsService:
         cls,
         db: Session,
         days_threshold: int = 3,
-        reference_date: Optional[date] = None
+        reference_date: Optional[date] = None,
+        owner_id: Optional[uuid.UUID] = None
     ) -> List[MembershipExpirySchema]:
         """
         Returns actionable list of memberships expiring within N days.
         """
         today = reference_date or date.today()
         threshold_date = today + timedelta(days=days_threshold)
+
+        conditions = [
+            Membership.status == "ACTIVE",
+            Membership.end_date >= today,
+            Membership.end_date <= threshold_date
+        ]
+        if owner_id:
+            conditions.append(Membership.created_by == owner_id)
 
         stmt = (
             select(Membership)
@@ -136,13 +160,7 @@ class AnalyticsService:
                 joinedload(Membership.seat),
                 joinedload(Membership.shift)
             )
-            .where(
-                and_(
-                    Membership.status == "ACTIVE",
-                    Membership.end_date >= today,
-                    Membership.end_date <= threshold_date
-                )
-            )
+            .where(and_(*conditions))
             .order_by(Membership.end_date.asc())
         )
         mems = list(db.scalars(stmt).all())
@@ -171,7 +189,8 @@ class AnalyticsService:
         cls,
         db: Session,
         start_date: date,
-        end_date: date
+        end_date: date,
+        owner_id: Optional[uuid.UUID] = None
     ) -> RevenueReportSchema:
         """
         Computes revenue aggregated by payment method for a date span.
@@ -180,13 +199,20 @@ class AnalyticsService:
         start_dt = datetime.combine(start_date, datetime.min.time())
         end_dt = datetime.combine(end_date, datetime.max.time())
 
-        base_stmt = select(Payment).where(
-            and_(
-                Payment.status == "COMPLETED",
-                Payment.created_at >= start_dt,
-                Payment.created_at <= end_dt
+        conditions = [
+            Payment.status == "COMPLETED",
+            Payment.created_at >= start_dt,
+            Payment.created_at <= end_dt
+        ]
+        if owner_id:
+            conditions.append(
+                or_(
+                    Payment.received_by == owner_id,
+                    Payment.membership.has(Membership.created_by == owner_id)
+                )
             )
-        )
+
+        base_stmt = select(Payment).where(and_(*conditions))
         payments = list(db.scalars(base_stmt).all())
 
         total = Decimal("0.00")

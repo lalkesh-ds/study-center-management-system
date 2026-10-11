@@ -5,6 +5,7 @@ from backend.app.models.shift import Shift
 from backend.app.models.membership import Membership
 from backend.app.models.payment import Payment
 from backend.app.models.attendance import Attendance
+from backend.app.models.refresh_token import RefreshToken
 
 __all__ = [
     "User",
@@ -14,4 +15,5 @@ __all__ = [
     "Membership",
     "Payment",
     "Attendance",
+    "RefreshToken",
 ]

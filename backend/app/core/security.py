@@ -75,3 +75,21 @@ def decode_access_token(token: str) -> Optional[dict]:
         return payload
     except JWTError:
         return None
+
+
+import secrets
+import hashlib
+
+
+def generate_refresh_token_string() -> str:
+    """
+    Generates a high-entropy cryptographically secure refresh token string.
+    """
+    return secrets.token_urlsafe(48)
+
+
+def hash_token(token: str) -> str:
+    """
+    Computes SHA-256 hash of a token string for secure persistent storage.
+    """
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()

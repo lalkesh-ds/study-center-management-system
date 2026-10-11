@@ -36,6 +36,9 @@ def db_session(test_db_engine) -> Session:
     Base.metadata.drop_all(test_db_engine)
     Base.metadata.create_all(test_db_engine)
 
+    from backend.app.core.rate_limit import reset_rate_limiter
+    reset_rate_limiter()
+
     SessionTesting = sessionmaker(autocommit=False, autoflush=False, bind=test_db_engine)
     db = SessionTesting()
 
@@ -86,6 +89,7 @@ def db_session(test_db_engine) -> Session:
 def client(db_session: Session) -> TestClient:
     """
     FastAPI TestClient with dependency override pointing to isolated test DB.
+    Pre-configured with Admin Bearer Authorization header for operational endpoints.
     """
     def override_get_db():
         try:
@@ -93,7 +97,13 @@ def client(db_session: Session) -> TestClient:
         finally:
             pass
 
+    from backend.app.core.security import create_access_token
+    from backend.app.models.user import User
+
+    admin_user = db_session.query(User).filter(User.username == "admin").first()
+    admin_token = create_access_token(subject=str(admin_user.id), role="ADMIN")
+
     app.dependency_overrides[get_db] = override_get_db
-    with TestClient(app) as test_client:
+    with TestClient(app, headers={"Authorization": f"Bearer {admin_token}"}) as test_client:
         yield test_client
     app.dependency_overrides.clear()

@@ -38,6 +38,7 @@ class MembershipRepository(BaseRepository[Membership]):
         shift_id: Optional[int] = None,
         status: Optional[str] = None,
         target_date: Optional[date] = None,
+        created_by: Optional[UUID] = None,
         skip: int = 0,
         limit: int = 50
     ) -> Tuple[List[Membership], int]:
@@ -52,6 +53,8 @@ class MembershipRepository(BaseRepository[Membership]):
         count_query = select(func.count()).select_from(Membership)
 
         filters = []
+        if created_by:
+            filters.append(Membership.created_by == created_by)
         if student_id:
             filters.append(Membership.student_id == student_id)
         if seat_id:

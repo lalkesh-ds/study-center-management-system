@@ -49,7 +49,8 @@ class Settings(BaseSettings):
         description="Cryptographic secret key for signing JWT tokens"
     )
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 480  # 8 Hours
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60  # 1 Hour for access token
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 7  # 7 Days for refresh token
 
     # Seed Admin Credentials
     INITIAL_ADMIN_USERNAME: str = "admin"

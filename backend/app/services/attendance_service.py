@@ -132,7 +132,8 @@ class AttendanceService:
     def list_daily(
         cls,
         db: Session,
-        attendance_date: Optional[date] = None
+        attendance_date: Optional[date] = None,
+        owner_id: Optional[UUID] = None
     ) -> List[Attendance]:
         """Lists daily attendance logs with eager-loaded student and membership relations."""
         target = attendance_date or date.today()
@@ -143,8 +144,11 @@ class AttendanceService:
                 joinedload(Attendance.membership)
             )
             .where(Attendance.attendance_date == target)
-            .order_by(Attendance.check_in.desc())
         )
+        if owner_id:
+            stmt = stmt.where(Attendance.membership.has(Membership.created_by == owner_id))
+
+        stmt = stmt.order_by(Attendance.check_in.desc())
         return list(db.scalars(stmt).all())
 
 

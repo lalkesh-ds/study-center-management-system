@@ -7,6 +7,8 @@ from backend.app.core.exceptions import NotFoundException
 from backend.app.db.session import get_db
 from backend.app.repositories.seat_repository import seat_repository
 from backend.app.schemas.seat import SeatResponseSchema, SeatStatusUpdateSchema
+from backend.app.models.user import User
+from backend.app.services.auth_service import require_admin, require_staff_or_admin
 
 router = APIRouter(prefix="/seats", tags=["Seats"])
 
@@ -28,12 +30,14 @@ def get_seat_availability(
     end_date: Optional[date] = Query(None, description="Target end date (inclusive)"),
     shift_id: Optional[int] = Query(None, description="Operating shift identifier (1 to 4)"),
     target_date: Optional[date] = Query(None, description="Single target date evaluation (defaults to today)"),
+    current_user: User = Depends(require_staff_or_admin),
     db: Session = Depends(get_db)
 ):
     """
     Returns real-time 100-seat occupancy matrix:
     - If shift_id is provided: returns single-shift matrix for [start_date, end_date].
     - If shift_id is not provided: returns comprehensive multi-shift perspective for target_date.
+    Scoped to the authenticated library owner.
     """
     from backend.app.core.exceptions import ValidationException, NotFoundException
     from backend.app.models.shift import Shift
@@ -53,14 +57,16 @@ def get_seat_availability(
             db=db,
             start_date=s_date,
             end_date=e_date,
-            shift_id=shift_id
+            shift_id=shift_id,
+            owner_id=current_user.id
         )
 
     # Multi-shift comprehensive floor map perspective
     eval_date = target_date or start_date or date.today()
     return allocation_service.get_daily_seat_matrix(
         db=db,
-        target_date=eval_date
+        target_date=eval_date,
+        owner_id=current_user.id
     )
 
 
@@ -100,7 +106,8 @@ def get_seat(
 def update_seat_status(
     id: int,
     payload: SeatStatusUpdateSchema,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    admin_user=Depends(require_admin)
 ):
     """
     Marks a physical desk as active or places it under maintenance.

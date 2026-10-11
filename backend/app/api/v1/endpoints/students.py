@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from backend.app.core.exceptions import NotFoundException, ConflictException
 from backend.app.db.session import get_db
 from backend.app.models.student import Student
+from backend.app.models.user import User
 from backend.app.repositories.student_repository import student_repository
 from backend.app.schemas.common import PaginatedResponse, PaginationMeta
 from backend.app.schemas.student import (
@@ -13,13 +14,19 @@ from backend.app.schemas.student import (
     StudentUpdateSchema,
     StudentResponseSchema,
 )
+from backend.app.services.auth_service import require_staff_or_admin
 
-router = APIRouter(prefix="/students", tags=["Students"])
+router = APIRouter(
+    prefix="/students",
+    tags=["Students"],
+    dependencies=[Depends(require_staff_or_admin)]
+)
 
 
 @router.post("", response_model=StudentResponseSchema, status_code=status.HTTP_201_CREATED)
 def register_student(
     payload: StudentCreateSchema,
+    current_user: User = Depends(require_staff_or_admin),
     db: Session = Depends(get_db)
 ):
     """
@@ -48,7 +55,8 @@ def register_student(
         emergency_contact=payload.emergency_contact,
         address=payload.address,
         notes=payload.notes,
-        status="ACTIVE"
+        status="ACTIVE",
+        created_by=current_user.id
     )
 
     db.add(student)
@@ -63,13 +71,14 @@ def list_students(
     status: Optional[str] = Query(None, pattern="^(ACTIVE|INACTIVE|BLOCKED)$", description="Filter by student status"),
     skip: int = Query(0, ge=0, description="Offset for pagination"),
     limit: int = Query(50, ge=1, le=100, description="Records limit per page"),
+    current_user: User = Depends(require_staff_or_admin),
     db: Session = Depends(get_db)
 ):
     """
     Search and paginate through enrolled students directory.
     """
     items, total = student_repository.search_and_paginate(
-        db, search=search, status=status, skip=skip, limit=limit
+        db, search=search, status=status, owner_id=current_user.id, skip=skip, limit=limit
     )
 
     return PaginatedResponse(
@@ -91,12 +100,13 @@ from fastapi.responses import StreamingResponse
 def export_students_csv(
     search: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
+    current_user: User = Depends(require_staff_or_admin),
     db: Session = Depends(get_db)
 ):
     """
     Exports student directory as a downloadable CSV file.
     """
-    items, _ = student_repository.search_and_paginate(db, search=search, status=status, skip=0, limit=10000)
+    items, _ = student_repository.search_and_paginate(db, search=search, status=status, owner_id=current_user.id, skip=0, limit=10000)
     output = io.StringIO()
     writer = csv.writer(output)
     writer.writerow(["Student Code", "Full Name", "Mobile", "Email", "ID Proof Type", "ID Proof Number", "Status", "Registered Date"])
@@ -124,13 +134,14 @@ def export_students_csv(
 @router.get("/{id}", response_model=StudentResponseSchema)
 def get_student_profile(
     id: UUID,
+    current_user: User = Depends(require_staff_or_admin),
     db: Session = Depends(get_db)
 ):
     """
     Retrieves full details of a specific student by unique identifier.
     """
     student = student_repository.get_by_id(db, id)
-    if not student:
+    if not student or (student.created_by and student.created_by != current_user.id):
         raise NotFoundException(f"Student with ID '{id}' was not found.", code="STUDENT_NOT_FOUND")
     return student
 
@@ -139,13 +150,14 @@ def get_student_profile(
 def update_student_profile(
     id: UUID,
     payload: StudentUpdateSchema,
+    current_user: User = Depends(require_staff_or_admin),
     db: Session = Depends(get_db)
 ):
     """
     Updates profile attributes, status, or contact details of an existing student.
     """
     student = student_repository.get_by_id(db, id)
-    if not student:
+    if not student or (student.created_by and student.created_by != current_user.id):
         raise NotFoundException(f"Student with ID '{id}' was not found.", code="STUDENT_NOT_FOUND")
 
     # If mobile is being changed, ensure new mobile is not taken

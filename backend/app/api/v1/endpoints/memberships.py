@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from backend.app.core.exceptions import NotFoundException
 from backend.app.db.session import get_db
+from backend.app.models.user import User
 from backend.app.repositories.membership_repository import membership_repository
 from backend.app.schemas.common import PaginatedResponse, PaginationMeta
 from backend.app.schemas.membership import (
@@ -17,8 +18,13 @@ from backend.app.schemas.membership import (
     MembershipDetailSchema,
 )
 from backend.app.services.membership_service import membership_service
+from backend.app.services.auth_service import require_staff_or_admin
 
-router = APIRouter(prefix="/memberships", tags=["Memberships"])
+router = APIRouter(
+    prefix="/memberships",
+    tags=["Memberships"],
+    dependencies=[Depends(require_staff_or_admin)]
+)
 
 
 def format_membership_response(m, db: Optional[Session] = None) -> MembershipResponseSchema:
@@ -57,13 +63,18 @@ def format_membership_response(m, db: Optional[Session] = None) -> MembershipRes
 @router.post("", response_model=MembershipResponseSchema, status_code=status.HTTP_201_CREATED)
 def create_membership_admission(
     payload: MembershipCreateSchema,
+    current_user: User = Depends(require_staff_or_admin),
     db: Session = Depends(get_db)
 ):
     """
     Executes student admission and temporal seat reservation within an isolated ACID transaction.
     Enforces pessimistic row locking and rejects collisions with HTTP 409.
     """
-    membership = membership_service.create_admission_atomic(db=db, payload=payload)
+    membership = membership_service.create_admission_atomic(
+        db=db,
+        payload=payload,
+        creator_user_id=current_user.id
+    )
     return format_membership_response(membership, db=db)
 
 
@@ -71,6 +82,7 @@ def create_membership_admission(
 def renew_membership(
     id: UUID,
     payload: MembershipRenewSchema,
+    current_user: User = Depends(require_staff_or_admin),
     db: Session = Depends(get_db)
 ):
     """
@@ -78,7 +90,12 @@ def renew_membership(
     Preserves prior membership history and establishes lineage link (renewed_from_id).
     Supports retaining seat or migrating to an available new desk/shift.
     """
-    renewed = membership_service.renew_membership_atomic(db=db, old_membership_id=id, payload=payload)
+    renewed = membership_service.renew_membership_atomic(
+        db=db,
+        old_membership_id=id,
+        payload=payload,
+        creator_user_id=current_user.id
+    )
     return format_membership_response(renewed, db=db)
 
 
@@ -86,6 +103,7 @@ def renew_membership(
 def cancel_membership(
     id: UUID,
     payload: MembershipCancelSchema,
+    current_user: User = Depends(require_staff_or_admin),
     db: Session = Depends(get_db)
 ):
     """
@@ -106,10 +124,11 @@ def list_memberships(
     target_date: Optional[date] = Query(None, description="Filter active on specific date"),
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
+    current_user: User = Depends(require_staff_or_admin),
     db: Session = Depends(get_db)
 ):
     """
-    Search and paginate memberships with relational filters.
+    Search and paginate memberships with relational filters scoped to the authenticated owner.
     """
     items, total = membership_repository.search_and_paginate(
         db,
@@ -118,6 +137,7 @@ def list_memberships(
         shift_id=shift_id,
         status=status,
         target_date=target_date,
+        created_by=current_user.id,
         skip=skip,
         limit=limit
     )
@@ -138,6 +158,7 @@ def list_memberships(
 @router.get("/{id}", response_model=MembershipDetailSchema)
 def get_membership_details(
     id: UUID,
+    current_user: User = Depends(require_staff_or_admin),
     db: Session = Depends(get_db)
 ):
     """
@@ -145,7 +166,7 @@ def get_membership_details(
     (total_paid, due_amount, payment_status).
     """
     m = membership_repository.get_with_relations(db, id)
-    if not m:
+    if not m or (m.created_by and m.created_by != current_user.id):
         raise NotFoundException(f"Membership with ID '{id}' was not found.", code="MEMBERSHIP_NOT_FOUND")
 
     total_paid, due_amount, pay_status = membership_repository.get_financial_summary(db, m.id, m.final_fee)

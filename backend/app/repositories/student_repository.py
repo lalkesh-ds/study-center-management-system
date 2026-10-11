@@ -41,15 +41,22 @@ class StudentRepository(BaseRepository[Student]):
         db: Session,
         search: Optional[str] = None,
         status: Optional[str] = None,
+        owner_id: Optional[uuid.UUID] = None,
         skip: int = 0,
         limit: int = 50
     ) -> Tuple[List[Student], int]:
         """
         Searches students by name, mobile, or student_code with pagination.
+        Scoped to owner_id when provided.
         Returns (list_of_students, total_count).
         """
         query = select(Student)
         count_query = select(func.count()).select_from(Student)
+
+        # Scoping filter
+        if owner_id:
+            query = query.where(Student.created_by == owner_id)
+            count_query = count_query.where(Student.created_by == owner_id)
 
         # Filters
         if status:

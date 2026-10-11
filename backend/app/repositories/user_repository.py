@@ -1,6 +1,6 @@
 import uuid
 from typing import Optional, List
-from sqlalchemy import select
+from sqlalchemy import select, or_
 from sqlalchemy.orm import Session
 
 from backend.app.models.user import User
@@ -21,19 +21,43 @@ class UserRepository:
     def get_by_email(self, email: str) -> Optional[User]:
         return self.db.execute(select(User).where(User.email == email)).scalar_one_or_none()
 
-    def list(self, skip: int = 0, limit: int = 50) -> List[User]:
-        stmt = select(User).order_by(User.created_at.desc()).offset(skip).limit(limit)
+    def get_by_mobile(self, mobile: str) -> Optional[User]:
+        return self.db.execute(select(User).where(User.mobile == mobile)).scalar_one_or_none()
+
+    def get_by_student_id(self, student_id: uuid.UUID) -> Optional[User]:
+        return self.db.execute(select(User).where(User.student_id == student_id)).scalar_one_or_none()
+
+    def get_by_identifier(self, identifier: str) -> Optional[User]:
+        """
+        Allows flexible login by username, email, or mobile.
+        """
+        stmt = select(User).where(
+            or_(
+                User.username == identifier,
+                User.email == identifier,
+                User.mobile == identifier
+            )
+        )
+        return self.db.execute(stmt).scalars().first()
+
+    def list(self, skip: int = 0, limit: int = 50, role: Optional[str] = None) -> List[User]:
+        stmt = select(User)
+        if role:
+            stmt = stmt.where(User.role == role)
+        stmt = stmt.order_by(User.created_at.desc()).offset(skip).limit(limit)
         return list(self.db.execute(stmt).scalars().all())
 
-    def create(self, user_in: UserCreate) -> User:
+    def create(self, user_in: UserCreate, student_id: Optional[uuid.UUID] = None) -> User:
         user = User(
             id=uuid.uuid4(),
             username=user_in.username,
             email=user_in.email,
+            mobile=getattr(user_in, "mobile", None),
             password_hash=get_password_hash(user_in.password),
             full_name=user_in.full_name,
             role=user_in.role,
             is_active=user_in.is_active,
+            student_id=student_id,
         )
         self.db.add(user)
         self.db.commit()

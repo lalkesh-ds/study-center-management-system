@@ -9,6 +9,7 @@ from backend.app.api.v1.endpoints import (
     attendance,
     dashboard,
     auth,
+    customer,
 )
 
 api_v1_router = APIRouter()
@@ -16,6 +17,7 @@ api_v1_router = APIRouter()
 # Mount API Routers
 api_v1_router.include_router(health.router)
 api_v1_router.include_router(auth.router)
+api_v1_router.include_router(customer.router)
 api_v1_router.include_router(students.router)
 api_v1_router.include_router(seats.router)
 api_v1_router.include_router(shifts.router)

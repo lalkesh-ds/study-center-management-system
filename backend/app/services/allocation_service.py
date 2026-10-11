@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Dict, List, Optional, Tuple
 from uuid import UUID
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_, or_
 from sqlalchemy.orm import Session
 
 from backend.app.core.config import settings
@@ -111,7 +111,8 @@ class AllocationService:
         db: Session,
         start_date: date,
         end_date: date,
-        shift_id: int
+        shift_id: int,
+        owner_id: Optional[UUID] = None
     ) -> Dict:
         """
         Generates real-time availability status for all 100 physical seats
@@ -125,15 +126,19 @@ class AllocationService:
         seats = list(db.scalars(select(Seat).order_by(Seat.seat_number.asc())).all())
 
         # Query all conflicting memberships for this shift window
-        overlapping_stmt = select(Membership).where(
-            and_(
-                Membership.status == "ACTIVE",
-                Membership.start_date <= end_date,
-                Membership.end_date >= start_date,
-                Membership.start_minute < shift.end_minute,
-                Membership.end_minute > shift.start_minute
+        overlapping_conditions = [
+            Membership.status == "ACTIVE",
+            Membership.start_date <= end_date,
+            Membership.end_date >= start_date,
+            Membership.start_minute < shift.end_minute,
+            Membership.end_minute > shift.start_minute
+        ]
+        if owner_id:
+            overlapping_conditions.append(
+                or_(Membership.created_by == owner_id, Membership.created_by.is_(None))
             )
-        )
+
+        overlapping_stmt = select(Membership).where(and_(*overlapping_conditions))
         overlapping_memberships = {m.seat_id: m for m in db.scalars(overlapping_stmt).all()}
 
         seat_matrix = []
@@ -184,7 +189,8 @@ class AllocationService:
     @staticmethod
     def get_daily_seat_matrix(
         db: Session,
-        target_date: date
+        target_date: date,
+        owner_id: Optional[UUID] = None
     ) -> List[Dict]:
         """
         Generates complete 100-seat multi-shift allocation perspective for a single calendar date.
@@ -194,15 +200,19 @@ class AllocationService:
         from sqlalchemy.orm import joinedload
         seats = list(db.scalars(select(Seat).order_by(Seat.seat_number.asc())).all())
 
+        daily_conditions = [
+            Membership.status == "ACTIVE",
+            Membership.start_date <= target_date,
+            Membership.end_date >= target_date
+        ]
+        if owner_id:
+            daily_conditions.append(
+                or_(Membership.created_by == owner_id, Membership.created_by.is_(None))
+            )
+
         stmt = (
             select(Membership)
-            .where(
-                and_(
-                    Membership.status == "ACTIVE",
-                    Membership.start_date <= target_date,
-                    Membership.end_date >= target_date
-                )
-            )
+            .where(and_(*daily_conditions))
             .options(joinedload(Membership.student), joinedload(Membership.shift))
         )
         active_memberships = list(db.scalars(stmt).all())

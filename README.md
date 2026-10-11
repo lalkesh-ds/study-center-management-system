@@ -298,21 +298,28 @@ python scripts/seed_data.py      # 100 seats, 4 shifts, default admin user
 ### 4. Run
 
 ```bash
-# Backend (terminal 1)
+# 1. Backend (Terminal 1)
 uvicorn backend.app.main:app --reload --port 8000
 
-# Front desk UI (terminal 2)
+# 2. Premium React Frontend (Terminal 2 - Recommended)
+cd frontend/react_app
+npm run dev
+
+# 3. Streamlit Front Desk UI (Terminal 3 - Optional Legacy)
 streamlit run frontend/streamlit_app/app.py
 ```
 
-| Service | URL |
-| :-- | :-- |
-| Swagger UI | http://localhost:8000/docs |
-| ReDoc | http://localhost:8000/redoc |
-| Health check | http://localhost:8000/api/v1/health |
-| Streamlit UI | http://localhost:8501 |
+| Service | URL | Notes |
+| :-- | :-- | :-- |
+| **React Web App** | http://localhost:5173 | Modern production web application (Vite + React 19 + Tailwind CSS) |
+| **Streamlit UI** | http://localhost:8501 | Legacy front desk interface |
+| **FastAPI Swagger** | http://localhost:8000/docs | Interactive API explorer & schema contracts |
+| **FastAPI ReDoc** | http://localhost:8000/redoc | Formal REST documentation |
+| **Health Check** | http://localhost:8000/api/v1/health | System readiness & database connectivity |
 
-The seed script creates the initial admin account; see `scripts/seed_data.py` for its credentials and change them before any real use.
+Default login credentials seeded by `scripts/seed_data.py`:
+- **Admin**: `admin` / `Admin@123`
+- **Staff / Operator**: `librarian` / `Staff@123`
 
 ---
 

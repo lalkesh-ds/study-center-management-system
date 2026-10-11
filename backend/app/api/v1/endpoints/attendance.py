@@ -5,14 +5,20 @@ from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 
 from backend.app.db.session import get_db
+from backend.app.models.user import User
 from backend.app.schemas.attendance import (
     AttendanceCheckInSchema,
     AttendanceCheckOutSchema,
     AttendanceResponseSchema,
 )
 from backend.app.services.attendance_service import attendance_service
+from backend.app.services.auth_service import require_staff_or_admin
 
-router = APIRouter(prefix="/attendance", tags=["Attendance"])
+router = APIRouter(
+    prefix="/attendance",
+    tags=["Attendance"],
+    dependencies=[Depends(require_staff_or_admin)]
+)
 
 
 def format_attendance_response(att) -> AttendanceResponseSchema:
@@ -40,13 +46,14 @@ def format_attendance_response(att) -> AttendanceResponseSchema:
 @router.post("/check-in", response_model=AttendanceResponseSchema, status_code=status.HTTP_201_CREATED)
 def record_student_check_in(
     payload: AttendanceCheckInSchema,
+    current_user: User = Depends(require_staff_or_admin),
     db: Session = Depends(get_db)
 ):
     """
     Records student physical arrival at desk.
     Verifies that the student holds an active membership for the current date.
     """
-    att = attendance_service.record_check_in(db=db, payload=payload)
+    att = attendance_service.record_check_in(db=db, payload=payload, marked_by_user_id=current_user.id)
     return format_attendance_response(att)
 
 
@@ -54,6 +61,7 @@ def record_student_check_in(
 def record_student_check_out(
     id: UUID,
     payload: Optional[AttendanceCheckOutSchema] = None,
+    current_user: User = Depends(require_staff_or_admin),
     db: Session = Depends(get_db)
 ):
     """
@@ -68,10 +76,11 @@ def record_student_check_out(
 @router.get("/daily", response_model=List[AttendanceResponseSchema])
 def list_daily_attendance(
     attendance_date: Optional[date] = Query(None, description="Target date (defaults to today)"),
+    current_user: User = Depends(require_staff_or_admin),
     db: Session = Depends(get_db)
 ):
     """
     Returns daily attendance logs for front desk review.
     """
-    logs = attendance_service.list_daily(db=db, attendance_date=attendance_date)
+    logs = attendance_service.list_daily(db=db, attendance_date=attendance_date, owner_id=current_user.id)
     return [format_attendance_response(att) for att in logs]

@@ -10,21 +10,27 @@ from backend.app.schemas.payment import (
     PaymentVoidSchema,
     PaymentResponseSchema,
 )
+from backend.app.models.user import User
 from backend.app.services.payment_service import payment_service
+from backend.app.services.auth_service import require_staff_or_admin
 
-router = APIRouter(tags=["Payments"])
+router = APIRouter(
+    tags=["Payments"],
+    dependencies=[Depends(require_staff_or_admin)]
+)
 
 
 @router.post("/payments", response_model=PaymentResponseSchema, status_code=status.HTTP_201_CREATED)
 def record_payment_installment(
     payload: PaymentCreateSchema,
+    current_user: User = Depends(require_staff_or_admin),
     db: Session = Depends(get_db)
 ):
     """
     Records an installment payment towards a membership contract.
     Issues a verified receipt number and updates the live due balance.
     """
-    return payment_service.record_payment(db=db, payload=payload)
+    return payment_service.record_payment(db=db, payload=payload, received_by_user_id=current_user.id)
 
 
 @router.post("/payments/{id}/void", response_model=PaymentResponseSchema)
