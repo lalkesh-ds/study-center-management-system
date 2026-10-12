@@ -1,12 +1,19 @@
-# Byte-compiled / optimized / DLL files
+# Python cache
 __pycache__/
 *.py[cod]
 *$py.class
 
-# C extensions
-*.so
+# Virtual environments
+.env
+.venv
+env/
+venv/
+myenv/
+ENV/
+env.bak/
+venv.bak/
 
-# Distribution / packaging
+# Distribution / packaging (Python)
 .Python
 build/
 develop-eggs/
@@ -14,7 +21,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -25,16 +31,6 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
-
-# Environments
-.env
-.venv
-env/
-venv/
-myenv/
-ENV/
-env.bak/
-venv.bak/
 
 # SQLite databases / test artifacts
 *.sqlite3
@@ -55,4 +51,3 @@ htmlcov/
 *.swo
 .DS_Store
 Thumbs.db
-myenv/ 

@@ -1,12 +1,22 @@
 import axios, { AxiosError } from 'axios'
 
 const getApiBaseUrl = (): string => {
+  // 1. Production / Render: always use explicit env var if set
   const envUrl = import.meta.env.VITE_API_BASE_URL
-  if (typeof window !== 'undefined' && window.location.hostname && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-    // If accessing from LAN IP (e.g. 192.168.0.197), connect to same host backend
+  if (envUrl) return envUrl
+
+  // 2. Local LAN access (e.g. 192.168.x.x) — connect to same host backend on port 8000
+  if (
+    typeof window !== 'undefined' &&
+    window.location.hostname &&
+    window.location.hostname !== 'localhost' &&
+    window.location.hostname !== '127.0.0.1'
+  ) {
     return `http://${window.location.hostname}:8000/api/v1`
   }
-  return envUrl || 'http://localhost:8000/api/v1'
+
+  // 3. Local dev fallback
+  return 'http://localhost:8000/api/v1'
 }
 
 export const apiClient = axios.create({

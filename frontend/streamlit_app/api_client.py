@@ -2,7 +2,7 @@ import os
 from typing import Optional, Dict, Any, List
 import httpx
 
-BACKEND_API_URL = os.getenv("BACKEND_API_URL", "http://https://study-center-management-system-1.onrender.com/api/v1")
+BACKEND_API_URL = os.getenv("BACKEND_API_URL", "https://study-center-management-system-1.onrender.com/api/v1")
 
 
 class APIClient:
