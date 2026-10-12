@@ -1,7 +1,11 @@
 import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, Navigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { Eye, EyeOff, Loader2, Sparkles, Building2 } from 'lucide-react'
+import { Eye, EyeOff, Loader2, Building2, ArrowRight, ArrowLeft } from 'lucide-react'
+
+const inputClass =
+  'w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500/60 transition-all'
+const labelClass = 'text-[11px] font-semibold text-slate-500 uppercase tracking-widest'
 
 export const RegisterPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -17,8 +21,13 @@ export const RegisterPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const { register } = useAuth()
+  const { register, isAuthenticated, isLoading } = useAuth()
   const navigate = useNavigate()
+
+  // 🔒 Security: already-authenticated users cannot see register page
+  if (!isLoading && isAuthenticated) {
+    return <Navigate to="/" replace />
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }))
@@ -29,201 +38,210 @@ export const RegisterPage: React.FC = () => {
     setError(null)
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match.')
+      setError('Passwords do not match. Please re-enter.')
       return
     }
-
     if (formData.password.length < 8) {
       setError('Password must be at least 8 characters long.')
       return
     }
 
-    const cleanedMobile = formData.mobile.replace(/[\s\-\+]/g, '')
-    if (cleanedMobile.length < 10 || cleanedMobile.length > 15) {
-      setError('Please provide a valid 10-digit mobile number.')
-      return
-    }
-
     setIsSubmitting(true)
-
     try {
       await register({
         username: formData.username.trim(),
         email: formData.email.trim(),
-        mobile: cleanedMobile,
+        ...(formData.mobile.trim() ? { mobile: formData.mobile.trim() } : {}),
         full_name: `${formData.fullName.trim()} (${formData.libraryName.trim()})`,
         password: formData.password,
       })
       navigate('/', { replace: true })
     } catch (err: any) {
-      const msg =
-        err.response?.data?.message ||
-        err.response?.data?.error?.message ||
-        err.message ||
-        'Registration failed. Please verify your details.'
-      setError(msg)
+      setError(err.message || 'Registration failed. Please verify your details.')
     } finally {
       setIsSubmitting(false)
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-900 p-4 sm:p-6 lg:p-8 font-sans">
-      <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden">
-        {/* Top Header */}
-        <div className="p-8 pb-5 border-b border-slate-100 text-center">
-          <div className="w-12 h-12 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-lg mx-auto shadow-md mb-3">
-            SL
-          </div>
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight">Register Your Library</h2>
-          <p className="text-xs text-slate-500 mt-1">Smart Library & Study Center Management System</p>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-[11px] font-semibold mt-3">
-            <Sparkles size={12} />
-            <span>Admin / Library Owner Account</span>
-          </div>
-        </div>
+    <div className="min-h-screen flex items-center justify-center bg-slate-950 p-6 font-sans">
+      {/* Background orbs */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full bg-indigo-600/10 blur-[120px]" />
+        <div className="absolute -bottom-40 -left-40 w-[600px] h-[600px] rounded-full bg-violet-700/10 blur-[120px]" />
+      </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-8 pt-6 space-y-4">
+      <div className="relative w-full max-w-xl space-y-6">
+        {/* Back link */}
+        <Link
+          to="/login"
+          className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-300 transition-colors"
+        >
+          <ArrowLeft size={16} />
+          Back to Sign In
+        </Link>
+
+        {/* Card */}
+        <div className="bg-slate-900/80 border border-slate-800/80 backdrop-blur-xl rounded-2xl p-8 shadow-2xl space-y-6">
+          {/* Header */}
+          <div className="flex items-center gap-4">
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-indigo-500/30 shrink-0">
+              SL
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-white tracking-tight">Register Your Library</h2>
+              <p className="text-slate-500 text-sm">Create your Admin account to get started</p>
+            </div>
+          </div>
+
+          {/* Error */}
           {error && (
-            <div className="p-3.5 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700 font-medium leading-relaxed">
-              {error}
+            <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-sm text-rose-400">
+              <span className="shrink-0 mt-0.5">⚠</span>
+              <span>{error}</span>
             </div>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Owner / Admin Name</label>
-              <input
-                type="text"
-                name="fullName"
-                value={formData.fullName}
-                onChange={handleChange}
-                placeholder="e.g. Ramesh Kumar"
-                required
-                className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-slate-900"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Library / Center Name</label>
-              <input
-                type="text"
-                name="libraryName"
-                value={formData.libraryName}
-                onChange={handleChange}
-                placeholder="e.g. Lakshya Study Hub"
-                required
-                className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-slate-900"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Admin Username</label>
-              <input
-                type="text"
-                name="username"
-                value={formData.username}
-                onChange={handleChange}
-                placeholder="e.g. ramesh_lib"
-                required
-                className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-slate-900"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Mobile Number</label>
-              <input
-                type="tel"
-                name="mobile"
-                value={formData.mobile}
-                onChange={handleChange}
-                placeholder="e.g. 9876543210"
-                required
-                className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-slate-900"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Official Email</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="e.g. owner@library.com"
-              required
-              className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-slate-900"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Password</label>
-              <div className="relative">
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Row 1 */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className={labelClass}>Owner Name</label>
                 <input
-                  type={showPassword ? 'text' : 'password'}
-                  name="password"
-                  value={formData.password}
+                  type="text"
+                  name="fullName"
+                  value={formData.fullName}
                   onChange={handleChange}
-                  placeholder="Min 8 chars"
+                  placeholder="e.g. Ramesh Kumar"
                   required
-                  className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-slate-900 pr-10"
+                  className={inputClass}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
-                >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
+              </div>
+              <div className="space-y-1.5">
+                <label className={labelClass}>Library / Center Name</label>
+                <input
+                  type="text"
+                  name="libraryName"
+                  value={formData.libraryName}
+                  onChange={handleChange}
+                  placeholder="e.g. Lakshya Study Hub"
+                  required
+                  className={inputClass}
+                />
               </div>
             </div>
 
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Confirm Password</label>
+            {/* Row 2 */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className={labelClass}>Admin Username</label>
+                <input
+                  type="text"
+                  name="username"
+                  value={formData.username}
+                  onChange={handleChange}
+                  placeholder="e.g. ramesh_lib"
+                  required
+                  className={inputClass}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className={labelClass}>Mobile Number</label>
+                <input
+                  type="tel"
+                  name="mobile"
+                  value={formData.mobile}
+                  onChange={handleChange}
+                  placeholder="e.g. 9876543210"
+                  className={inputClass}
+                />
+              </div>
+            </div>
+
+            {/* Email */}
+            <div className="space-y-1.5">
+              <label className={labelClass}>Official Email</label>
               <input
-                type={showPassword ? 'text' : 'password'}
-                name="confirmPassword"
-                value={formData.confirmPassword}
+                type="email"
+                name="email"
+                value={formData.email}
                 onChange={handleChange}
-                placeholder="Repeat password"
+                placeholder="e.g. owner@library.com"
                 required
-                className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-slate-900"
+                className={inputClass}
               />
             </div>
-          </div>
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full py-2.5 px-4 mt-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 size={16} className="animate-spin" />
-                <span>Registering Library...</span>
-              </>
-            ) : (
-              <>
-                <Building2 size={16} />
-                <span>Register & Open Library Dashboard</span>
-              </>
-            )}
-          </button>
+            {/* Passwords */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className={labelClass}>Password</label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="Min. 8 characters"
+                    required
+                    className={`${inputClass} pr-12`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-400 transition-colors focus:outline-none"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <label className={labelClass}>Confirm Password</label>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  placeholder="Repeat password"
+                  required
+                  className={inputClass}
+                />
+              </div>
+            </div>
 
-          <div className="text-center pt-3 border-t border-slate-100">
-            <p className="text-xs text-slate-600">
-              Already registered as a Library Owner?{' '}
-              <Link to="/login" className="font-semibold text-blue-600 hover:text-blue-700 hover:underline">
-                Sign In to Terminal
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full py-3 px-4 mt-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold text-sm shadow-lg shadow-indigo-500/25 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group cursor-pointer"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  <span>Registering Library…</span>
+                </>
+              ) : (
+                <>
+                  <Building2 size={16} />
+                  <span>Register & Open Dashboard</span>
+                  <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Login link */}
+          <div className="text-center pt-2 border-t border-slate-800">
+            <p className="text-sm text-slate-600">
+              Already have an account?{' '}
+              <Link to="/login" className="font-semibold text-indigo-400 hover:text-indigo-300 transition-colors">
+                Sign In
               </Link>
             </p>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   )

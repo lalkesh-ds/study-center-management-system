@@ -10,8 +10,8 @@ import {
   Clock,
   BarChart3,
   LogOut,
-  ChevronLeft,
-  ChevronRight,
+  PanelLeftClose,
+  PanelLeftOpen,
   ShieldCheck,
   UserCheck,
   Menu,
@@ -30,7 +30,7 @@ const navSections: { section: string; items: NavItem[] }[] = [
     items: [{ title: 'Dashboard', href: '/', icon: LayoutDashboard }],
   },
   {
-    section: 'Library Operations',
+    section: 'Operations',
     items: [
       { title: 'Seat Management', href: '/seats', icon: Armchair },
       { title: 'Students', href: '/students', icon: GraduationCap },
@@ -57,106 +57,134 @@ export const Sidebar: React.FC = () => {
 
   const handleLogout = () => {
     logout()
-    navigate('/login')
+    navigate('/login', { replace: true })
   }
 
-  // Close mobile drawer on route change
   React.useEffect(() => {
     setMobileOpen(false)
   }, [location.pathname])
 
+  const avatarLetter = (user?.full_name || user?.username || 'U').charAt(0).toUpperCase()
+  const displayName = user?.full_name || user?.username || 'User'
+  const isAdmin = user?.role === 'ADMIN'
+
   const sidebarContent = (
-    <div className="flex flex-col h-full bg-slate-900 text-slate-200 border-r border-slate-800 select-none">
-      {/* Brand Header */}
-      <div className="h-16 flex items-center justify-between px-4 border-b border-slate-800">
+    <div className="flex flex-col h-full bg-[#0c1021] text-slate-300 border-r border-white/[0.06] select-none">
+
+      {/* ── Brand Header ── */}
+      <div className={`h-16 flex items-center border-b border-white/[0.06] shrink-0 ${collapsed ? 'justify-center px-3' : 'justify-between px-4'}`}>
         {!collapsed && (
-          <div className="flex items-center gap-2.5 overflow-hidden">
-            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
+          <div className="flex items-center gap-2.5 overflow-hidden min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-bold text-sm shadow-md shadow-indigo-500/30 shrink-0">
               SL
             </div>
-            <div className="flex flex-col">
-              <span className="font-semibold text-sm tracking-tight text-white leading-tight">Smart Library</span>
-              <span className="text-[10px] text-slate-400 font-medium tracking-wide uppercase">Study Center OS</span>
+            <div className="flex flex-col min-w-0">
+              <span className="font-semibold text-sm tracking-tight text-white leading-tight truncate">Smart Library</span>
+              <span className="text-[10px] text-indigo-400/70 font-medium uppercase tracking-widest">Study Center OS</span>
             </div>
           </div>
         )}
         {collapsed && (
-          <div className="w-8 h-8 mx-auto rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-bold text-sm shadow-md shadow-indigo-500/30">
             SL
           </div>
         )}
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="hidden md:flex p-1.5 rounded-md hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
-          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-        </button>
+        {!collapsed && (
+          <button
+            onClick={() => setCollapsed(true)}
+            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-white/[0.06] transition-all focus:outline-none shrink-0"
+            title="Collapse sidebar"
+          >
+            <PanelLeftClose size={16} />
+          </button>
+        )}
       </div>
 
-      {/* Nav List */}
-      <div className="flex-1 overflow-y-auto py-4 px-3 space-y-6">
+      {/* ── Nav Items ── */}
+      <div className="flex-1 overflow-y-auto py-4 px-2 space-y-5">
         {navSections.map((sec) => (
-          <div key={sec.section} className="space-y-1">
+          <div key={sec.section}>
             {!collapsed && (
-              <p className="px-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
+              <p className="px-3 mb-1.5 text-[10px] font-semibold text-slate-600 uppercase tracking-widest">
                 {sec.section}
               </p>
             )}
-            {sec.items.map((item) => {
-              const Icon = item.icon
-              return (
-                <NavLink
-                  key={item.href}
-                  to={item.href}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                      isActive
-                        ? 'bg-blue-600 text-white shadow-sm font-semibold'
-                        : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                    } ${collapsed ? 'justify-center px-2' : ''}`
-                  }
-                  title={collapsed ? item.title : undefined}
-                >
-                  <Icon size={18} className="shrink-0" />
-                  {!collapsed && <span className="truncate">{item.title}</span>}
-                </NavLink>
-              )
-            })}
+            <div className="space-y-0.5">
+              {sec.items.map((item) => {
+                const Icon = item.icon
+                return (
+                  <NavLink
+                    key={item.href}
+                    to={item.href}
+                    end={item.href === '/'}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
+                        isActive
+                          ? 'bg-gradient-to-r from-indigo-600/30 to-violet-600/20 text-white border border-indigo-500/20 shadow-sm shadow-indigo-500/10'
+                          : 'text-slate-400 hover:bg-white/[0.05] hover:text-slate-200'
+                      } ${collapsed ? 'justify-center px-2.5' : ''}`
+                    }
+                    title={collapsed ? item.title : undefined}
+                  >
+                    {({ isActive }) => (
+                      <>
+                        <Icon
+                          size={18}
+                          className={`shrink-0 transition-colors ${isActive ? 'text-indigo-400' : 'text-slate-500 group-hover:text-slate-300'}`}
+                        />
+                        {!collapsed && <span className="truncate">{item.title}</span>}
+                      </>
+                    )}
+                  </NavLink>
+                )
+              })}
+            </div>
           </div>
         ))}
       </div>
 
-      {/* Footer Profile & Logout */}
-      <div className="p-3 border-t border-slate-800 bg-slate-950/40">
+      {/* ── Expand Button (when collapsed) ── */}
+      {collapsed && (
+        <div className="px-2 pb-2">
+          <button
+            onClick={() => setCollapsed(false)}
+            className="w-full p-2.5 rounded-xl text-slate-500 hover:text-slate-300 hover:bg-white/[0.05] transition-all flex items-center justify-center focus:outline-none"
+            title="Expand sidebar"
+          >
+            <PanelLeftOpen size={16} />
+          </button>
+        </div>
+      )}
+
+      {/* ── Footer: User + Logout ── */}
+      <div className="p-2 border-t border-white/[0.06] space-y-1 shrink-0">
         {!collapsed && user && (
-          <div className="flex items-center justify-between p-2 rounded-lg bg-slate-800/60 mb-2">
-            <div className="flex items-center gap-2.5 overflow-hidden">
-              <div className="w-7 h-7 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-xs font-bold shrink-0">
-                {(user.full_name || user.username || 'U').charAt(0).toUpperCase()}
-              </div>
-              <div className="flex flex-col overflow-hidden">
-                <span className="text-xs font-semibold text-white truncate">{user.full_name || user.username || 'User'}</span>
-                <span className="text-[10px] text-slate-400 flex items-center gap-1 font-mono">
-                  {user.role === 'ADMIN' ? (
-                    <ShieldCheck size={10} className="text-emerald-400" />
-                  ) : (
-                    <UserCheck size={10} className="text-blue-400" />
-                  )}
-                  {user.role || 'STAFF'}
-                </span>
-              </div>
+          <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.06] mb-1">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500/30 to-violet-600/20 border border-indigo-500/20 text-indigo-300 flex items-center justify-center text-xs font-bold shrink-0">
+              {avatarLetter}
+            </div>
+            <div className="flex flex-col overflow-hidden min-w-0">
+              <span className="text-xs font-semibold text-white truncate">{displayName}</span>
+              <span className="text-[10px] text-slate-500 flex items-center gap-1">
+                {isAdmin ? (
+                  <ShieldCheck size={9} className="text-emerald-400 shrink-0" />
+                ) : (
+                  <UserCheck size={9} className="text-blue-400 shrink-0" />
+                )}
+                {user?.role || 'STAFF'}
+              </span>
             </div>
           </div>
         )}
+
         <button
           onClick={handleLogout}
-          className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 transition-colors ${
-            collapsed ? 'justify-center px-2' : ''
+          className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-500 hover:bg-rose-500/10 hover:text-rose-400 transition-all ${
+            collapsed ? 'justify-center px-2.5' : ''
           }`}
           title="Sign Out"
         >
-          <LogOut size={16} className="shrink-0" />
+          <LogOut size={15} className="shrink-0" />
           {!collapsed && <span>Sign Out</span>}
         </button>
       </div>
@@ -165,27 +193,28 @@ export const Sidebar: React.FC = () => {
 
   return (
     <>
-      {/* Mobile Top Toggle */}
-      <div className="md:hidden fixed top-0 left-0 right-0 h-14 bg-slate-900 border-b border-slate-800 z-40 flex items-center justify-between px-4">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-md bg-blue-600 flex items-center justify-center text-white font-bold text-xs">
+      {/* ── Mobile Top Bar ── */}
+      <div className="md:hidden fixed top-0 left-0 right-0 h-14 bg-[#0c1021] border-b border-white/[0.06] z-40 flex items-center justify-between px-4">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-bold text-xs">
             SL
           </div>
           <span className="font-semibold text-white text-sm">Smart Library</span>
         </div>
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="p-2 rounded-md text-slate-300 hover:bg-slate-800 focus:outline-none"
+          className="p-2 rounded-lg text-slate-400 hover:bg-white/[0.06] focus:outline-none transition-all"
         >
           {mobileOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
       </div>
 
-      {/* Mobile Drawer Overlay */}
+      {/* ── Mobile Drawer ── */}
       {mobileOpen && (
-        <div className="md:hidden fixed inset-0 z-50 bg-black/50" onClick={() => setMobileOpen(false)}>
+        <div className="md:hidden fixed inset-0 z-50" onClick={() => setMobileOpen(false)}>
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
           <div
-            className="w-72 h-full bg-slate-900 z-50 shadow-2xl"
+            className="relative w-72 h-full shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             {sidebarContent}
@@ -193,10 +222,10 @@ export const Sidebar: React.FC = () => {
         </div>
       )}
 
-      {/* Desktop Sidebar */}
+      {/* ── Desktop Sidebar ── */}
       <aside
         className={`hidden md:flex flex-col shrink-0 h-screen sticky top-0 transition-all duration-200 z-30 ${
-          collapsed ? 'w-18' : 'w-64'
+          collapsed ? 'w-16' : 'w-60'
         }`}
       >
         {sidebarContent}

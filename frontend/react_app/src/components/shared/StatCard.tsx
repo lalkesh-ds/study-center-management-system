@@ -1,6 +1,32 @@
 import React from 'react'
-import { Card, CardContent } from '../ui/Card'
 import { cn } from '../../lib/utils'
+
+// ─── Color scheme maps ─────────────────────────────────────────────────────
+const iconGradients = {
+  blue:    'from-blue-500/20 to-blue-600/10 border-blue-500/20',
+  emerald: 'from-emerald-500/20 to-emerald-600/10 border-emerald-500/20',
+  amber:   'from-amber-500/20 to-amber-600/10 border-amber-500/20',
+  purple:  'from-violet-500/20 to-violet-600/10 border-violet-500/20',
+  slate:   'from-slate-500/20 to-slate-600/10 border-slate-500/20',
+} as const
+
+const iconTextColors = {
+  blue:    'text-blue-400',
+  emerald: 'text-emerald-400',
+  amber:   'text-amber-400',
+  purple:  'text-violet-400',
+  slate:   'text-slate-400',
+} as const
+
+const valueBars = {
+  blue:    'from-blue-500/20 via-blue-600/5 to-transparent',
+  emerald: 'from-emerald-500/20 via-emerald-600/5 to-transparent',
+  amber:   'from-amber-500/20 via-amber-600/5 to-transparent',
+  purple:  'from-violet-500/20 via-violet-600/5 to-transparent',
+  slate:   'from-slate-500/20 via-slate-600/5 to-transparent',
+} as const
+
+type ColorScheme = keyof typeof iconGradients
 
 interface StatCardProps {
   title: string
@@ -9,7 +35,7 @@ interface StatCardProps {
   icon: React.ElementType
   trend?: string
   trendType?: 'positive' | 'negative' | 'neutral'
-  colorScheme?: 'blue' | 'emerald' | 'amber' | 'purple' | 'slate'
+  colorScheme?: ColorScheme
 }
 
 export const StatCard: React.FC<StatCardProps> = ({
@@ -18,33 +44,50 @@ export const StatCard: React.FC<StatCardProps> = ({
   subtitle,
   icon: Icon,
   trend,
+  trendType = 'neutral',
   colorScheme = 'blue',
 }) => {
-  const iconColors = {
-    blue: 'bg-blue-50 text-blue-600 border-blue-100',
-    emerald: 'bg-emerald-50 text-emerald-600 border-emerald-100',
-    amber: 'bg-amber-50 text-amber-600 border-amber-100',
-    purple: 'bg-purple-50 text-purple-600 border-purple-100',
-    slate: 'bg-slate-100 text-slate-600 border-slate-200',
+  const trendColors = {
+    positive: 'text-emerald-400',
+    negative: 'text-rose-400',
+    neutral:  'text-slate-500',
   }
 
   return (
-    <Card className="hover:border-slate-300 transition-colors">
-      <CardContent className="p-5 flex items-start justify-between">
-        <div className="space-y-1">
-          <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">{title}</p>
-          <div className="text-2xl font-bold text-slate-900 tracking-tight">{value}</div>
-          {subtitle && <p className="text-xs text-slate-500">{subtitle}</p>}
+    <div className="relative group bg-[#0e1629] border border-white/[0.07] rounded-2xl overflow-hidden transition-all duration-200 hover:border-white/[0.14] hover:shadow-lg hover:shadow-black/30">
+      {/* Gradient wash top-right */}
+      <div className={cn('absolute top-0 right-0 w-32 h-32 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 bg-gradient-to-br opacity-50', valueBars[colorScheme])} />
+
+      <div className="relative p-5 flex items-start justify-between gap-4">
+        {/* Text */}
+        <div className="space-y-1 min-w-0">
+          <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-widest truncate">
+            {title}
+          </p>
+          <div className="text-[26px] font-bold text-white tracking-tight leading-none">
+            {value}
+          </div>
+          {subtitle && (
+            <p className="text-[11px] text-slate-500 font-medium">{subtitle}</p>
+          )}
           {trend && (
-            <p className="text-xs font-medium text-blue-600 mt-1 flex items-center gap-1">
-              <span>{trend}</span>
+            <p className={cn('text-[11px] font-semibold mt-1', trendColors[trendType])}>
+              {trend}
             </p>
           )}
         </div>
-        <div className={cn('p-3 rounded-xl border shrink-0', iconColors[colorScheme])}>
-          <Icon size={22} />
+
+        {/* Icon box */}
+        <div className={cn(
+          'w-11 h-11 rounded-xl bg-gradient-to-br border flex items-center justify-center shrink-0 mt-0.5',
+          iconGradients[colorScheme]
+        )}>
+          <Icon size={20} className={iconTextColors[colorScheme]} />
         </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      {/* Bottom accent line */}
+      <div className={cn('h-[2px] bg-gradient-to-r to-transparent', valueBars[colorScheme])} />
+    </div>
   )
 }

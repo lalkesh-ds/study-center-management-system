@@ -35,7 +35,7 @@ export interface LoginResponse {
 export interface RegisterPayload {
   username: string
   email: string
-  mobile: string
+  mobile?: string
   full_name: string
   password: string
 }
