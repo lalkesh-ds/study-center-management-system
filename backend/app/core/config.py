@@ -52,6 +52,32 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60  # 1 Hour for access token
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7  # 7 Days for refresh token
 
+    # CORS Allowed Origins (Comma-separated string or list)
+    # e.g. "http://localhost:5173,https://study-center-management-system-lalkesh-ds.onrender.com"
+    CORS_ORIGINS: str = (
+        "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173,"
+        "https://study-center-management-system-lalkesh-ds.onrender.com"
+    )
+
+    @field_validator("SECRET_KEY")
+    @classmethod
+    def validate_secret_key(cls, v: str, info) -> str:
+        # In production, prohibit the default development secret
+        env = os.getenv("ENVIRONMENT", "development").lower()
+        if env == "production":
+            if "default_insecure" in v or len(v) < 32:
+                raise ValueError(
+                    "CRITICAL SECURITY ERROR: In production environment, SECRET_KEY must be "
+                    "a securely generated cryptographic key of at least 32 characters."
+                )
+        return v
+
+    def get_cors_origins(self) -> list[str]:
+        """Returns list of normalized allowed CORS origins."""
+        if not self.CORS_ORIGINS:
+            return ["*"]
+        return [origin.strip() for origin in self.CORS_ORIGINS.split(",") if origin.strip()]
+
     # Seed Admin Credentials
     INITIAL_ADMIN_USERNAME: str = "admin"
     INITIAL_ADMIN_EMAIL: str = "admin@smartlibrary.com"

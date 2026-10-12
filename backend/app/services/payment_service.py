@@ -37,6 +37,10 @@ class PaymentService:
         if not membership:
             raise NotFoundException(f"Membership with ID '{payload.membership_id}' was not found.", code="MEMBERSHIP_NOT_FOUND")
 
+        # Tenant isolation: Ensure membership belongs to current user/owner
+        if received_by_user_id and membership.created_by and membership.created_by != received_by_user_id:
+            raise NotFoundException(f"Membership with ID '{payload.membership_id}' was not found.", code="MEMBERSHIP_NOT_FOUND")
+
         if membership.status == "CANCELLED":
             raise ValidationException("Cannot process payments on a cancelled membership.", code="CANNOT_PAY_CANCELLED")
 
@@ -85,6 +89,10 @@ class PaymentService:
         """
         payment = db.get(Payment, payment_id)
         if not payment:
+            raise NotFoundException(f"Payment with ID '{payment_id}' was not found.", code="PAYMENT_NOT_FOUND")
+
+        # Tenant isolation: Ensure payment membership belongs to current user/owner
+        if voided_by_user_id and payment.membership and payment.membership.created_by and payment.membership.created_by != voided_by_user_id:
             raise NotFoundException(f"Payment with ID '{payment_id}' was not found.", code="PAYMENT_NOT_FOUND")
 
         if payment.status == "VOIDED":

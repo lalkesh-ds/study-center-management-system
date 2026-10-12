@@ -1,81 +1,123 @@
-import React, { createContext, useContext, useState, useEffect } from 'react'
-import type { User } from '../types'
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import type { User, RegisterPayload } from '../types'
 import { authApi } from '../api/auth'
+import { tokenStorage } from '../utils/tokenStorage'
 
 interface AuthContextType {
   user: User | null
   token: string | null
   isLoading: boolean
   isAuthenticated: boolean
-  login: (username: string, password: string) => Promise<User>
-  register: (payload: import('../types').RegisterPayload) => Promise<User>
+  login: (username: string, password: string, rememberMe?: boolean) => Promise<User>
+  register: (payload: RegisterPayload, rememberMe?: boolean) => Promise<User>
   logout: () => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem('auth_user')
-    return saved ? JSON.parse(saved) : null
-  })
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem('auth_token'))
+  const [user, setUser] = useState<User | null>(() => tokenStorage.getUser())
+  const [token, setToken] = useState<string | null>(() => tokenStorage.getToken())
   const [isLoading, setIsLoading] = useState<boolean>(true)
 
-  useEffect(() => {
-    const initAuth = async () => {
-      const storedToken = localStorage.getItem('auth_token')
-      if (storedToken) {
+  const verifySession = useCallback(async () => {
+    const storedToken = tokenStorage.getToken()
+    const storedRefreshToken = tokenStorage.getRefreshToken()
+
+    if (!storedToken && !storedRefreshToken) {
+      setUser(null)
+      setToken(null)
+      setIsLoading(false)
+      return
+    }
+
+    try {
+      // 1. Validate existing access token with backend
+      const profile = await authApi.getMe()
+      setUser(profile)
+      setToken(storedToken)
+      tokenStorage.updateUser(profile)
+    } catch {
+      // 2. If access token verification fails, attempt silent refresh if refresh token exists
+      if (storedRefreshToken) {
         try {
-          const profile = await authApi.getMe()
-          setUser(profile)
-          localStorage.setItem('auth_user', JSON.stringify(profile))
+          const refreshed = await authApi.refreshToken(storedRefreshToken)
+          tokenStorage.updateTokens(refreshed.access_token, refreshed.refresh_token)
+          tokenStorage.updateUser(refreshed.user)
+          setToken(refreshed.access_token)
+          setUser(refreshed.user)
         } catch {
-          localStorage.removeItem('auth_token')
-          localStorage.removeItem('auth_refresh_token')
-          localStorage.removeItem('auth_user')
+          // Both access token and refresh token failed — clear session completely
+          tokenStorage.clearSession()
           setUser(null)
           setToken(null)
         }
+      } else {
+        tokenStorage.clearSession()
+        setUser(null)
+        setToken(null)
       }
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    verifySession()
+
+    // Cross-tab synchronization via storage event
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'auth_token' || e.key === 'auth_user') {
+        if (!e.newValue) {
+          // Token removed in another tab -> sync logout immediately
+          setUser(null)
+          setToken(null)
+        } else {
+          // New session established in another tab -> sync session
+          verifySession()
+        }
+      }
+    }
+
+    // Custom event triggered by axios interceptor upon token expiration
+    const handleSessionExpired = () => {
+      setUser(null)
+      setToken(null)
       setIsLoading(false)
     }
 
-    initAuth()
-  }, [])
+    window.addEventListener('storage', handleStorageChange)
+    window.addEventListener('auth:session_expired', handleSessionExpired)
 
-  const login = async (username: string, password: string): Promise<User> => {
-    const res = await authApi.login(username, password)
-    localStorage.setItem('auth_token', res.access_token)
-    if (res.refresh_token) {
-      localStorage.setItem('auth_refresh_token', res.refresh_token)
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+      window.removeEventListener('auth:session_expired', handleSessionExpired)
     }
-    localStorage.setItem('auth_user', JSON.stringify(res.user))
+  }, [verifySession])
+
+  const login = async (username: string, password: string, rememberMe = true): Promise<User> => {
+    const res = await authApi.login(username, password)
+    tokenStorage.setSession(res.access_token, res.refresh_token, res.user, rememberMe)
     setToken(res.access_token)
     setUser(res.user)
     return res.user
   }
 
-  const register = async (payload: import('../types').RegisterPayload): Promise<User> => {
+  const register = async (payload: RegisterPayload, rememberMe = true): Promise<User> => {
     const res = await authApi.register(payload)
-    localStorage.setItem('auth_token', res.access_token)
-    if (res.refresh_token) {
-      localStorage.setItem('auth_refresh_token', res.refresh_token)
-    }
-    localStorage.setItem('auth_user', JSON.stringify(res.user))
+    tokenStorage.setSession(res.access_token, res.refresh_token, res.user, rememberMe)
     setToken(res.access_token)
     setUser(res.user)
     return res.user
   }
 
   const logout = () => {
-    const refreshToken = localStorage.getItem('auth_refresh_token')
-    if (refreshToken) {
-      authApi.logout(refreshToken).catch(() => {})
-    }
-    localStorage.removeItem('auth_token')
-    localStorage.removeItem('auth_refresh_token')
-    localStorage.removeItem('auth_user')
+    const refreshToken = tokenStorage.getRefreshToken()
+    // Call server to invalidate refresh token in database
+    authApi.logout(refreshToken)
+
+    // Clear local storage and session state
+    tokenStorage.clearSession()
     setToken(null)
     setUser(null)
   }
@@ -86,7 +128,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         token,
         isLoading,
-        isAuthenticated: !!token && !!user,
+        isAuthenticated: !isLoading && !!token && !!user,
         login,
         register,
         logout,

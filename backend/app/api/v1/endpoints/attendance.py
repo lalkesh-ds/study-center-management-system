@@ -69,7 +69,7 @@ def record_student_check_out(
     """
     if payload is None:
         payload = AttendanceCheckOutSchema()
-    att = attendance_service.record_check_out(db=db, attendance_id=id, payload=payload)
+    att = attendance_service.record_check_out(db=db, attendance_id=id, payload=payload, owner_id=current_user.id)
     return format_attendance_response(att)
 
 

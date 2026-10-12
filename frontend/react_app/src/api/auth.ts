@@ -14,8 +14,16 @@ export const authApi = {
     const { data } = await apiClient.get<User>('/auth/me')
     return data
   },
-  logout: async (refreshToken: string): Promise<void> => {
-    await apiClient.post('/auth/logout', { refresh_token: refreshToken })
+  refreshToken: async (refreshToken: string): Promise<LoginResponse> => {
+    const { data } = await apiClient.post<LoginResponse>('/auth/refresh', { refresh_token: refreshToken })
+    return data
+  },
+  logout: async (refreshToken?: string | null): Promise<void> => {
+    if (refreshToken) {
+      await apiClient.post('/auth/logout', { refresh_token: refreshToken }).catch(() => {})
+    } else {
+      await apiClient.post('/auth/logout').catch(() => {})
+    }
   },
   changePassword: async (currentPassword: string, newPassword: string): Promise<void> => {
     await apiClient.post('/auth/change-password', {

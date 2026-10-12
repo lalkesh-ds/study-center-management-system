@@ -92,13 +92,18 @@ class AttendanceService:
         cls,
         db: Session,
         attendance_id: UUID,
-        payload: AttendanceCheckOutSchema
+        payload: AttendanceCheckOutSchema,
+        owner_id: Optional[UUID] = None
     ) -> Attendance:
         """
         Records student departure and marks session completion.
         """
         attendance = db.get(Attendance, attendance_id)
         if not attendance:
+            raise NotFoundException(f"Attendance log with ID '{attendance_id}' was not found.", code="ATTENDANCE_NOT_FOUND")
+
+        # Tenant isolation
+        if owner_id and attendance.membership and attendance.membership.created_by and attendance.membership.created_by != owner_id:
             raise NotFoundException(f"Attendance log with ID '{attendance_id}' was not found.", code="ATTENDANCE_NOT_FOUND")
 
         if attendance.check_out is not None:

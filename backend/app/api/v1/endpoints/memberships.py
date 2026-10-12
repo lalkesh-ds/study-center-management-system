@@ -110,7 +110,12 @@ def cancel_membership(
     Cancels an active membership immediately.
     Releases seat capacity for subsequent bookings while preserving financial history.
     """
-    cancelled = membership_service.cancel_membership_atomic(db=db, membership_id=id, cancel_reason=payload.cancel_reason)
+    cancelled = membership_service.cancel_membership_atomic(
+        db=db,
+        membership_id=id,
+        cancel_reason=payload.cancel_reason,
+        canceller_user_id=current_user.id
+    )
     return format_membership_response(cancelled, db=db)
 
 

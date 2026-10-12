@@ -49,14 +49,31 @@ def create_application() -> FastAPI:
         lifespan=lifespan
     )
 
-    # 1. CORS Configuration (Permits Streamlit Frontend & Local Dev)
+    cors_origins = settings.get_cors_origins()
+    has_wildcard = "*" in cors_origins
+
+    # 1. CORS Configuration with strict origin handling
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],  # Restrict to frontend origin in strict production
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
+        allow_origins=cors_origins,
+        allow_credentials=not has_wildcard,  # Spec disallows allow_credentials=True with wildcard
+        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allow_headers=["Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"],
+        expose_headers=["Content-Disposition"],
     )
+
+    # 2. HTTP Security Headers Middleware
+    @app.middleware("http")
+    async def add_security_headers(request, call_next):
+        response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+        if settings.ENVIRONMENT == "production":
+            response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        return response
 
     # 2. Register Global Exception Handlers
     app.add_exception_handler(AppException, app_exception_handler)

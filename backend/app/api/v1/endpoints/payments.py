@@ -33,25 +33,40 @@ def record_payment_installment(
     return payment_service.record_payment(db=db, payload=payload, received_by_user_id=current_user.id)
 
 
+from backend.app.core.exceptions import NotFoundException
+from backend.app.models.membership import Membership
+
 @router.post("/payments/{id}/void", response_model=PaymentResponseSchema)
 def void_payment(
     id: UUID,
     payload: PaymentVoidSchema,
+    current_user: User = Depends(require_staff_or_admin),
     db: Session = Depends(get_db)
 ):
     """
     Voids an erroneous payment record. Restores the due amount immediately.
-    Permanent audit fields (voided_at, void_reason) are preserved.
+    Permanent audit fields (voided_at, void_reason, voided_by) are preserved.
     """
-    return payment_service.void_payment(db=db, payment_id=id, void_reason=payload.void_reason)
+    return payment_service.void_payment(
+        db=db,
+        payment_id=id,
+        void_reason=payload.void_reason,
+        voided_by_user_id=current_user.id
+    )
 
 
 @router.get("/memberships/{id}/payments", response_model=List[PaymentResponseSchema])
 def list_membership_payments(
     id: UUID,
+    current_user: User = Depends(require_staff_or_admin),
     db: Session = Depends(get_db)
 ):
     """
     Retrieves the complete immutable payment history for a specific membership.
+    Enforces that the membership belongs to the authenticated library owner.
     """
+    membership = db.get(Membership, id)
+    if not membership or (membership.created_by and membership.created_by != current_user.id):
+        raise NotFoundException(f"Membership with ID '{id}' was not found.", code="MEMBERSHIP_NOT_FOUND")
+
     return payment_repository.list_by_membership(db=db, membership_id=id)

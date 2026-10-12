@@ -16,6 +16,7 @@ router = APIRouter(prefix="/seats", tags=["Seats"])
 @router.get("", response_model=List[SeatResponseSchema])
 def list_seats(
     is_active: Optional[bool] = Query(None, description="Filter seats by active/maintenance state"),
+    current_user: User = Depends(require_staff_or_admin),
     db: Session = Depends(get_db)
 ):
     """
@@ -73,10 +74,12 @@ def get_seat_availability(
 @router.put("/{id}/toggle-maintenance", response_model=SeatResponseSchema)
 def toggle_seat_maintenance(
     id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    admin_user: User = Depends(require_admin)
 ):
     """
     Toggles physical seat maintenance state between active and under maintenance.
+    Restricted to ADMIN.
     """
     seat = seat_repository.get_by_id(db, id)
     if not seat:
@@ -91,6 +94,7 @@ def toggle_seat_maintenance(
 @router.get("/{id}", response_model=SeatResponseSchema)
 def get_seat(
     id: int,
+    current_user: User = Depends(require_staff_or_admin),
     db: Session = Depends(get_db)
 ):
     """

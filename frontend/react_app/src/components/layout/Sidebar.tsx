@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../../context/AuthContext'
 import {
   LayoutDashboard,
@@ -54,9 +55,11 @@ export const Sidebar: React.FC = () => {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
+  const queryClient = useQueryClient()
 
   const handleLogout = () => {
     logout()
+    queryClient.clear()
     navigate('/login', { replace: true })
   }
 

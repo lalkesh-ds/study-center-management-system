@@ -156,6 +156,10 @@ class MembershipService:
         if not old_membership:
             raise NotFoundException(f"Prior membership with ID '{old_membership_id}' does not exist.", code="MEMBERSHIP_NOT_FOUND")
 
+        # Tenant isolation
+        if creator_user_id and old_membership.created_by and old_membership.created_by != creator_user_id:
+            raise NotFoundException(f"Prior membership with ID '{old_membership_id}' does not exist.", code="MEMBERSHIP_NOT_FOUND")
+
         if old_membership.status == "CANCELLED":
             raise ValidationException("Cancelled memberships cannot be renewed. Create a new admission instead.", code="CANNOT_RENEW_CANCELLED")
 
@@ -202,6 +206,10 @@ class MembershipService:
         """
         membership = db.get(Membership, membership_id)
         if not membership:
+            raise NotFoundException(f"Membership with ID '{membership_id}' was not found.", code="MEMBERSHIP_NOT_FOUND")
+
+        # Tenant isolation
+        if canceller_user_id and membership.created_by and membership.created_by != canceller_user_id:
             raise NotFoundException(f"Membership with ID '{membership_id}' was not found.", code="MEMBERSHIP_NOT_FOUND")
 
         if membership.status == "CANCELLED":

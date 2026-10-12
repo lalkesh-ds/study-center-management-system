@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Link, useNavigate, Navigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation, Navigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import {
   Eye, EyeOff, Loader2, Building2, CheckCircle2, ArrowRight,
@@ -16,16 +16,28 @@ const features = [
 export const LoginPage: React.FC = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [rememberMe, setRememberMe] = useState(true)
   const [showPassword, setShowPassword] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const { login, isAuthenticated, isLoading } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
 
-  // 🔒 Security: already-authenticated users cannot see login page via back/forward
+  // Safe redirect path validation to eliminate Open Redirect attacks
+  const getSafeRedirect = (): string => {
+    const from = (location.state as any)?.from
+    const path = typeof from === 'string' ? from : from?.pathname
+    if (path && typeof path === 'string' && path.startsWith('/') && !path.startsWith('//')) {
+      return path
+    }
+    return '/'
+  }
+
+  // 🔒 Security: already-authenticated users cannot access login page
   if (!isLoading && isAuthenticated) {
-    return <Navigate to="/" replace />
+    return <Navigate to={getSafeRedirect()} replace />
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -37,8 +49,8 @@ export const LoginPage: React.FC = () => {
     setError(null)
     setIsSubmitting(true)
     try {
-      await login(username.trim(), password)
-      navigate('/', { replace: true })
+      await login(username.trim(), password, rememberMe)
+      navigate(getSafeRedirect(), { replace: true })
     } catch (err: any) {
       setError(err.message || 'Authentication failed. Please verify your credentials.')
     } finally {
@@ -189,6 +201,22 @@ export const LoginPage: React.FC = () => {
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
+            </div>
+
+            {/* Remember Me Toggle */}
+            <div className="flex items-center justify-between pt-1">
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="w-4 h-4 rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-indigo-500/30 accent-indigo-600"
+                />
+                <span className="text-xs text-slate-400">Remember this session</span>
+              </label>
+              <span className="text-[11px] text-slate-600">
+                {rememberMe ? 'Persistent' : 'Ends on close'}
+              </span>
             </div>
 
             {/* Submit */}

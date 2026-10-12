@@ -64,7 +64,11 @@ def login(
     return service.authenticate_user(credentials, user_agent=user_agent, ip_address=ip_address)
 
 
-@router.post("/refresh", response_model=Token)
+@router.post(
+    "/refresh",
+    response_model=Token,
+    dependencies=[Depends(rate_limiter(max_requests=60, window_seconds=60))]
+)
 def refresh_token(
     payload: TokenRefreshRequest,
     request: Request,
@@ -81,18 +85,23 @@ def refresh_token(
 
 @router.post("/logout", status_code=status.HTTP_200_OK)
 def logout(
-    payload: TokenRefreshRequest,
+    payload: Optional[TokenRefreshRequest] = None,
     db: Session = Depends(get_db)
 ):
     """
     Revoke refresh token and invalidate the persistent session.
     """
-    service = AuthService(db)
-    service.logout(payload)
+    if payload and payload.refresh_token:
+        service = AuthService(db)
+        service.logout(payload)
     return {"message": "Successfully logged out and session revoked."}
 
 
-@router.post("/change-password", status_code=status.HTTP_200_OK)
+@router.post(
+    "/change-password",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(rate_limiter(max_requests=10, window_seconds=60))]
+)
 def change_password(
     payload: ChangePassword,
     current_user: User = Depends(get_current_user),

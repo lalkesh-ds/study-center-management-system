@@ -12,10 +12,10 @@ describe('UI Primitives', () => {
   it('renders Badge with custom variants and children', () => {
     const { rerender } = render(<Badge variant="success">Active</Badge>)
     expect(screen.getByText('Active')).toBeInTheDocument()
-    expect(screen.getByText('Active')).toHaveClass('bg-emerald-50')
+    expect(screen.getByText('Active')).toHaveClass('bg-emerald-500/10')
 
     rerender(<Badge variant="danger">Expired</Badge>)
-    expect(screen.getByText('Expired')).toHaveClass('bg-rose-50')
+    expect(screen.getByText('Expired')).toHaveClass('bg-rose-500/10')
   })
 
   it('renders Card with header and content sections', () => {
