@@ -1,7 +1,7 @@
 import React from 'react'
 import { useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { Activity } from 'lucide-react'
+import { Activity, Sparkles } from 'lucide-react'
 
 const routeTitles: Record<string, { title: string; subtitle: string; emoji: string }> = {
   '/':           { emoji: '📊', title: 'Dashboard',             subtitle: 'Real-time facility capacity, utilization rates, and revenue KPIs' },
@@ -26,34 +26,37 @@ export const Header: React.FC = () => {
   const displayName = user?.full_name || user?.username || 'User'
 
   return (
-    <header className="h-16 bg-[#0e1629]/95 backdrop-blur-sm border-b border-white/[0.06] px-6 flex items-center justify-between shrink-0">
+    <header className="h-16 bg-white/70 backdrop-blur-xl border-b border-white/80 shadow-[0_4px_20px_rgba(0,0,0,0.02)] px-6 flex items-center justify-between shrink-0 z-20">
       {/* Left: Page title */}
       <div className="flex items-center gap-3 min-w-0">
-        <span className="text-xl">{info.emoji}</span>
+        <span className="text-xl p-1.5 rounded-xl bg-white/80 border border-white shadow-xs">{info.emoji}</span>
         <div className="min-w-0">
-          <h1 className="text-[15px] font-bold text-white tracking-tight leading-tight truncate">
+          <h1 className="text-[15px] font-bold text-slate-900 tracking-tight leading-tight truncate">
             {info.title}
           </h1>
-          <p className="text-[11px] text-slate-500 font-normal truncate hidden sm:block">{info.subtitle}</p>
+          <p className="text-[11px] text-slate-500 font-medium truncate hidden sm:block">{info.subtitle}</p>
         </div>
       </div>
 
       {/* Right: Status + user */}
       <div className="flex items-center gap-3 shrink-0">
-        {/* Live badge */}
-        <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] font-semibold">
-          <Activity size={11} className="text-emerald-400" />
+        {/* Live facility badge */}
+        <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 text-xs font-semibold shadow-xs">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
           <span>Live · 100 Desks</span>
         </div>
 
-        {/* User avatar */}
+        {/* User avatar pill */}
         {user && (
-          <div className="flex items-center gap-2.5 pl-3 border-l border-white/[0.08]">
+          <div className="flex items-center gap-2.5 pl-3 border-l border-slate-200/60">
             <div className="text-right hidden sm:block">
-              <p className="text-xs font-semibold text-white leading-tight">{displayName}</p>
-              <p className="text-[10px] text-slate-500 capitalize">{(user.role || 'staff').toLowerCase()}</p>
+              <p className="text-xs font-bold text-slate-800 leading-tight">{displayName}</p>
+              <p className="text-[10px] text-indigo-600 font-semibold uppercase tracking-wider">{(user.role || 'staff').toLowerCase()}</p>
             </div>
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500/40 to-violet-600/30 border border-indigo-500/30 text-indigo-200 flex items-center justify-center text-xs font-bold shadow-sm">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center text-xs font-bold shadow-md shadow-indigo-500/20">
               {avatarLetter}
             </div>
           </div>

@@ -145,24 +145,24 @@ export const StudentsPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Tab Navigation */}
-      <div className="flex items-center gap-2 border-b border-slate-200">
+      {/* Tab Navigation Pill Bar */}
+      <div className="flex items-center gap-1.5 p-1 bg-white/70 backdrop-blur-xl rounded-2xl border border-white/80 shadow-[0_4px_20px_rgb(0,0,0,0.03)] w-fit">
         <button
           onClick={() => setActiveTab('directory')}
-          className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all ${
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
             activeTab === 'directory'
-              ? 'border-blue-600 text-blue-600'
-              : 'border-transparent text-slate-500 hover:text-slate-900'
+              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-indigo-500/20'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
           }`}
         >
           Student Directory
         </button>
         <button
           onClick={() => setActiveTab('register')}
-          className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all flex items-center gap-1.5 ${
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
             activeTab === 'register'
-              ? 'border-blue-600 text-blue-600'
-              : 'border-transparent text-slate-500 hover:text-slate-900'
+              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-indigo-500/20'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
           }`}
         >
           <UserPlus size={14} />
@@ -173,24 +173,24 @@ export const StudentsPage: React.FC = () => {
       {activeTab === 'directory' ? (
         <div className="space-y-4">
           {/* Search & Export Strip */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white/75 backdrop-blur-xl p-4 sm:p-5 rounded-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
             <div className="relative flex-1 max-w-md">
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
                 placeholder="Search by student name or 10-digit mobile..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-300 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200/90 bg-white/90 text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-2xs"
               />
             </div>
             <a
               href={studentsApi.exportStudentsCsv()}
               target="_blank"
               rel="noreferrer"
-              className="px-3.5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 shrink-0"
+              className="px-4 py-2.5 rounded-xl bg-white/80 hover:bg-white border border-slate-200/80 text-slate-700 text-xs font-bold shadow-2xs transition-all flex items-center justify-center gap-1.5 shrink-0 hover:border-slate-300"
             >
-              <FileDown size={14} />
+              <FileDown size={14} className="text-indigo-600" />
               <span>Export CSV</span>
             </a>
           </div>
@@ -210,7 +210,7 @@ export const StudentsPage: React.FC = () => {
                 />
               ) : (
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider">
+                  <thead className="bg-slate-50/80 border-b border-slate-100 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
                     <tr>
                       <th className="py-3 px-4">Student Code</th>
                       <th className="py-3 px-4">Full Name</th>
@@ -223,27 +223,27 @@ export const StudentsPage: React.FC = () => {
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-slate-700 font-medium">
                     {students.map((student) => (
-                      <tr key={student.id} className="hover:bg-slate-50/60 transition-colors">
-                        <td className="py-3 px-4 font-mono font-semibold text-blue-600">{student.student_code}</td>
-                        <td className="py-3 px-4 font-bold text-slate-900">{student.full_name}</td>
-                        <td className="py-3 px-4 font-mono text-slate-600">{student.mobile_number || student.mobile}</td>
-                        <td className="py-3 px-4 text-slate-500">{student.email || '—'}</td>
-                        <td className="py-3 px-4">
+                      <tr key={student.id} className="hover:bg-slate-50/50 transition-colors">
+                        <td className="py-3.5 px-4 font-mono font-bold text-indigo-600">{student.student_code}</td>
+                        <td className="py-3.5 px-4 font-bold text-slate-900">{student.full_name}</td>
+                        <td className="py-3.5 px-4 font-mono text-slate-600">{student.mobile_number || student.mobile}</td>
+                        <td className="py-3.5 px-4 text-slate-500">{student.email || '—'}</td>
+                        <td className="py-3.5 px-4">
                           <Badge variant={student.status === 'ACTIVE' ? 'success' : 'danger'}>{student.status}</Badge>
                         </td>
-                        <td className="py-3 px-4">{formatDate(student.created_at)}</td>
-                        <td className="py-3 px-4 text-right">
+                        <td className="py-3.5 px-4 text-slate-500">{formatDate(student.created_at)}</td>
+                        <td className="py-3.5 px-4 text-right">
                           <div className="flex items-center justify-end gap-1.5">
                             <button
                               onClick={() => openProfile(student)}
-                              className="p-1.5 rounded-md hover:bg-slate-100 text-slate-600 hover:text-blue-600 transition-colors"
+                              className="p-1.5 rounded-xl bg-white/60 hover:bg-white border border-transparent hover:border-slate-200 text-slate-600 hover:text-indigo-600 shadow-2xs transition-all cursor-pointer"
                               title="View KYC Profile & Subscriptions"
                             >
                               <Eye size={15} />
                             </button>
                             <button
                               onClick={() => openEdit(student)}
-                              className="p-1.5 rounded-md hover:bg-slate-100 text-slate-600 hover:text-amber-600 transition-colors"
+                              className="p-1.5 rounded-xl bg-white/60 hover:bg-white border border-transparent hover:border-slate-200 text-slate-600 hover:text-amber-600 shadow-2xs transition-all cursor-pointer"
                               title="Edit Student Info"
                             >
                               <Edit2 size={15} />
@@ -281,20 +281,20 @@ export const StudentsPage: React.FC = () => {
               )}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-700">Full Name *</label>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Full Name *</label>
                   <input
                     type="text"
                     required
                     placeholder="e.g. Rahul Sharma"
                     value={regForm.full_name}
                     onChange={(e) => setRegForm({ ...regForm, full_name: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200/90 bg-white/90 text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-2xs"
                   />
                 </div>
 
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-700">Mobile Number (10 Digits) *</label>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Mobile Number (10 Digits) *</label>
                   <input
                     type="tel"
                     required
@@ -302,42 +302,42 @@ export const StudentsPage: React.FC = () => {
                     placeholder="e.g. 9876543210"
                     value={regForm.mobile}
                     onChange={(e) => setRegForm({ ...regForm, mobile: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200/90 bg-white/90 text-xs font-mono font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-2xs"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-700">Email Address (Optional)</label>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Email Address (Optional)</label>
                   <input
                     type="email"
                     placeholder="e.g. rahul@example.com"
                     value={regForm.email || ''}
                     onChange={(e) => setRegForm({ ...regForm, email: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200/90 bg-white/90 text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-2xs"
                   />
                 </div>
 
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-700">Emergency Contact (Optional)</label>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Emergency Contact (Optional)</label>
                   <input
                     type="tel"
                     placeholder="Guardian phone number"
                     value={regForm.emergency_contact || ''}
                     onChange={(e) => setRegForm({ ...regForm, emergency_contact: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200/90 bg-white/90 text-xs font-mono font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-2xs"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-700">Govt ID Proof Type</label>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Govt ID Proof Type</label>
                   <select
                     value={regForm.id_proof_type || ''}
                     onChange={(e) => setRegForm({ ...regForm, id_proof_type: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200/90 bg-white/90 text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-2xs cursor-pointer"
                   >
                     <option value="Aadhaar Card">Aadhaar Card</option>
                     <option value="PAN Card">PAN Card</option>
@@ -347,26 +347,26 @@ export const StudentsPage: React.FC = () => {
                   </select>
                 </div>
 
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-700">ID Document Number</label>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">ID Document Number</label>
                   <input
                     type="text"
                     placeholder="e.g. 1234-5678-9012"
                     value={regForm.id_proof_number || ''}
                     onChange={(e) => setRegForm({ ...regForm, id_proof_number: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200/90 bg-white/90 text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-2xs"
                   />
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-700">Residential Address</label>
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Residential Address</label>
                 <textarea
                   rows={2}
                   placeholder="Street, City, Pincode"
                   value={regForm.address || ''}
                   onChange={(e) => setRegForm({ ...regForm, address: e.target.value })}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200/90 bg-white/90 text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-2xs"
                 />
               </div>
 
@@ -374,7 +374,7 @@ export const StudentsPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={registerMutation.isPending}
-                  className="px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-xs transition-colors flex items-center gap-2 disabled:opacity-70"
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md shadow-indigo-500/20 transition-all flex items-center gap-2 disabled:opacity-60 cursor-pointer active:scale-[0.99]"
                 >
                   {registerMutation.isPending ? <Loader2 size={14} className="animate-spin" /> : null}
                   <span>Complete Student Registration</span>

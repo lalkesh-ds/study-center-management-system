@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, CheckCircle2, KeyRound, Loader2, Mail } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, KeyRound, Loader2, Mail, Sparkles } from 'lucide-react'
 
 export const ForgotPasswordPage: React.FC = () => {
   const [identifier, setIdentifier] = useState('')
@@ -19,45 +19,64 @@ export const ForgotPasswordPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-900 p-4 sm:p-6 lg:p-8">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden">
-        {/* Top Header */}
-        <div className="p-8 pb-5 border-b border-slate-100 text-center">
-          <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center mx-auto mb-3">
-            <KeyRound size={24} />
-          </div>
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight">Password Recovery</h2>
-          <p className="text-xs text-slate-500 mt-1">
-            Enter your registered email, username, or mobile number
-          </p>
-        </div>
+    <div className="relative min-h-screen flex items-center justify-center bg-[#f8fafc] text-slate-800 p-4 sm:p-6 lg:p-8 font-sans overflow-hidden selection:bg-indigo-500 selection:text-white">
+      {/* ── Luminous Ambient Mesh Orbs ── */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden z-0">
+        <div className="absolute -top-32 -right-32 w-[650px] h-[650px] rounded-full bg-gradient-to-br from-indigo-300/30 via-purple-300/25 to-pink-200/20 blur-[140px]" />
+        <div className="absolute -bottom-32 -left-32 w-[650px] h-[650px] rounded-full bg-gradient-to-br from-sky-200/40 via-blue-300/25 to-indigo-200/20 blur-[150px]" />
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-gradient-to-tr from-pink-200/20 via-purple-200/20 to-blue-200/20 blur-[160px]" />
+      </div>
 
-        <div className="p-8 pt-6">
+      <div className="relative z-10 w-full max-w-md space-y-5 my-6">
+        {/* Back navigation */}
+        <Link
+          to="/login"
+          className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-indigo-600 transition-colors bg-white/70 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white shadow-xs"
+        >
+          <ArrowLeft size={14} />
+          Back to Sign In
+        </Link>
+
+        {/* Floating Frosted Glass Card */}
+        <div className="bg-white/75 backdrop-blur-2xl border border-white/90 rounded-3xl p-8 sm:p-10 shadow-[0_20px_50px_rgba(79,70,229,0.08)] space-y-6">
+          {/* Header */}
+          <div className="flex items-center gap-3.5 pb-2">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-violet-500 flex items-center justify-center text-white font-black text-sm shadow-lg shadow-indigo-500/25 shrink-0">
+              <KeyRound size={20} />
+            </div>
+            <div>
+              <h2 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                Password Recovery <Sparkles size={16} className="text-indigo-500" />
+              </h2>
+              <p className="text-slate-500 text-xs font-medium">Reset your secure library workspace access</p>
+            </div>
+          </div>
+
           {submitted ? (
-            <div className="space-y-4 text-center">
-              <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
-                <CheckCircle2 size={24} />
+            <div className="space-y-4 text-center py-2">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-white flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/20">
+                <CheckCircle2 size={28} />
               </div>
-              <h3 className="text-sm font-bold text-slate-900">Recovery Instructions Sent</h3>
+              <h3 className="text-base font-bold text-slate-900">Recovery Instructions Sent</h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                If an account exists for <span className="font-semibold text-slate-800">{identifier}</span>, password reset guidance or front-desk PIN reset token has been dispatched.
+                If an account exists for <span className="font-semibold text-slate-900 bg-slate-100 px-1.5 py-0.5 rounded-md">{identifier}</span>, password reset instructions have been dispatched.
               </p>
-              <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-600 text-left space-y-1">
-                <p className="font-semibold text-slate-700">Need Immediate Assistance?</p>
-                <p>Visit the library front-desk counter or contact your administrator for immediate credential verification.</p>
+              <div className="p-3.5 rounded-2xl bg-slate-50/80 border border-slate-200/80 text-xs text-slate-600 text-left space-y-1">
+                <p className="font-bold text-slate-800">Need Immediate Help?</p>
+                <p className="text-slate-500">Visit your study center front-desk counter or contact your primary administrator for manual verification.</p>
               </div>
               <Link
                 to="/login"
-                className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition-all"
+                className="inline-flex items-center justify-center gap-2 w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md shadow-indigo-500/20 transition-all cursor-pointer"
               >
                 <ArrowLeft size={14} />
-                <span>Back to Sign In</span>
+                <span>Return to Sign In</span>
               </Link>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                   Account Identifier
                 </label>
                 <div className="relative">
@@ -65,11 +84,11 @@ export const ForgotPasswordPage: React.FC = () => {
                     type="text"
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
-                    placeholder="Email, Username, or Mobile"
+                    placeholder="Enter email, username, or mobile"
                     required
-                    className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-slate-900 pr-10"
+                    className="w-full px-4 py-3 rounded-2xl bg-white/90 border border-slate-200/80 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/12 transition-all shadow-xs pr-11"
                   />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+                  <div className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
                     <Mail size={16} />
                   </div>
                 </div>
@@ -78,7 +97,7 @@ export const ForgotPasswordPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-2.5 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
+                className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-sm shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/35 transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer active:scale-[0.99]"
               >
                 {isSubmitting ? (
                   <>
@@ -93,7 +112,7 @@ export const ForgotPasswordPage: React.FC = () => {
               <div className="text-center pt-2">
                 <Link
                   to="/login"
-                  className="inline-flex items-center gap-1.5 text-xs text-slate-600 hover:text-slate-900 font-medium"
+                  className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-indigo-600 font-bold transition-colors"
                 >
                   <ArrowLeft size={14} />
                   <span>Return to Sign In</span>

@@ -52,31 +52,31 @@ export const SeatsPage: React.FC = () => {
 
   const getSeatStatus = (seat: DailySeatMatrixItem) => {
     if (!seat.is_active) {
-      return { label: 'Maintenance', color: 'bg-rose-50 text-rose-700 border-rose-300', badgeVariant: 'danger' as const }
+      return { label: 'Maintenance', color: 'bg-rose-50/80 backdrop-blur-md text-rose-700 border-rose-200/90 shadow-2xs hover:border-rose-400', badgeVariant: 'danger' as const }
     }
 
     if (shiftFilter === 'MORNING') {
       return seat.morning_available
-        ? { label: 'Available', color: 'bg-emerald-50 text-emerald-700 border-emerald-300', badgeVariant: 'success' as const }
-        : { label: 'Occupied', color: 'bg-amber-50 text-amber-700 border-amber-300', badgeVariant: 'warning' as const }
+        ? { label: 'Available', color: 'bg-emerald-50/80 backdrop-blur-md text-emerald-700 border-emerald-200/90 shadow-2xs hover:border-emerald-400', badgeVariant: 'success' as const }
+        : { label: 'Occupied', color: 'bg-amber-50/80 backdrop-blur-md text-amber-700 border-amber-200/90 shadow-2xs hover:border-amber-400', badgeVariant: 'warning' as const }
     }
 
     if (shiftFilter === 'AFTERNOON') {
       return seat.afternoon_available
-        ? { label: 'Available', color: 'bg-emerald-50 text-emerald-700 border-emerald-300', badgeVariant: 'success' as const }
-        : { label: 'Occupied', color: 'bg-amber-50 text-amber-700 border-amber-300', badgeVariant: 'warning' as const }
+        ? { label: 'Available', color: 'bg-emerald-50/80 backdrop-blur-md text-emerald-700 border-emerald-200/90 shadow-2xs hover:border-emerald-400', badgeVariant: 'success' as const }
+        : { label: 'Occupied', color: 'bg-amber-50/80 backdrop-blur-md text-amber-700 border-amber-200/90 shadow-2xs hover:border-amber-400', badgeVariant: 'warning' as const }
     }
 
     if (shiftFilter === 'EVENING') {
       return seat.evening_available
-        ? { label: 'Available', color: 'bg-emerald-50 text-emerald-700 border-emerald-300', badgeVariant: 'success' as const }
-        : { label: 'Occupied', color: 'bg-amber-50 text-amber-700 border-amber-300', badgeVariant: 'warning' as const }
+        ? { label: 'Available', color: 'bg-emerald-50/80 backdrop-blur-md text-emerald-700 border-emerald-200/90 shadow-2xs hover:border-emerald-400', badgeVariant: 'success' as const }
+        : { label: 'Occupied', color: 'bg-amber-50/80 backdrop-blur-md text-amber-700 border-amber-200/90 shadow-2xs hover:border-amber-400', badgeVariant: 'warning' as const }
     }
 
     if (shiftFilter === 'FULL_DAY') {
       return seat.full_day_available
-        ? { label: 'Available', color: 'bg-emerald-50 text-emerald-700 border-emerald-300', badgeVariant: 'success' as const }
-        : { label: 'Occupied', color: 'bg-amber-50 text-amber-700 border-amber-300', badgeVariant: 'warning' as const }
+        ? { label: 'Available', color: 'bg-emerald-50/80 backdrop-blur-md text-emerald-700 border-emerald-200/90 shadow-2xs hover:border-emerald-400', badgeVariant: 'success' as const }
+        : { label: 'Occupied', color: 'bg-amber-50/80 backdrop-blur-md text-amber-700 border-amber-200/90 shadow-2xs hover:border-amber-400', badgeVariant: 'warning' as const }
     }
 
     // ALL perspective
@@ -86,12 +86,12 @@ export const SeatsPage: React.FC = () => {
     const f = seat.full_day_available
 
     if (!f && !m && !a && !e) {
-      return { label: 'Full Day Booked', color: 'bg-purple-50 text-purple-700 border-purple-300', badgeVariant: 'purple' as const }
+      return { label: 'Full Day Booked', color: 'bg-purple-50/80 backdrop-blur-md text-purple-700 border-purple-200/90 shadow-2xs hover:border-purple-400', badgeVariant: 'purple' as const }
     }
     if (m && a && e) {
-      return { label: 'Completely Free', color: 'bg-emerald-50 text-emerald-700 border-emerald-300', badgeVariant: 'success' as const }
+      return { label: 'Completely Free', color: 'bg-emerald-50/80 backdrop-blur-md text-emerald-700 border-emerald-200/90 shadow-2xs hover:border-emerald-400', badgeVariant: 'success' as const }
     }
-    return { label: 'Partially Booked', color: 'bg-amber-50 text-amber-700 border-amber-300', badgeVariant: 'warning' as const }
+    return { label: 'Partially Booked', color: 'bg-amber-50/80 backdrop-blur-md text-amber-700 border-amber-200/90 shadow-2xs hover:border-amber-400', badgeVariant: 'warning' as const }
   }
 
   // Summary Metrics
@@ -120,26 +120,26 @@ export const SeatsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Controls Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white/75 backdrop-blur-xl p-4 sm:p-5 rounded-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
         <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-2">
-            <Calendar size={18} className="text-blue-600 shrink-0" />
-            <span className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Date:</span>
+            <Calendar size={18} className="text-indigo-600 shrink-0" />
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Date:</span>
             <input
               type="date"
               value={targetDate}
               onChange={(e) => setTargetDate(e.target.value)}
-              className="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-1.5 rounded-xl border border-slate-200/90 bg-white/90 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-2xs"
             />
           </div>
 
           <div className="flex items-center gap-2">
-            <Layers size={18} className="text-slate-400 shrink-0" />
-            <span className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Perspective:</span>
+            <Layers size={18} className="text-indigo-500 shrink-0" />
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Perspective:</span>
             <select
               value={shiftFilter}
               onChange={(e) => setShiftFilter(e.target.value as any)}
-              className="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-1.5 rounded-xl border border-slate-200/90 bg-white/90 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-2xs cursor-pointer"
             >
               <option value="ALL">All Shifts Overview</option>
               <option value="MORNING">Morning (07:00 – 11:00)</option>
@@ -151,43 +151,43 @@ export const SeatsPage: React.FC = () => {
         </div>
 
         {/* Legend */}
-        <div className="flex flex-wrap items-center gap-3 text-xs">
+        <div className="flex flex-wrap items-center gap-3 text-xs bg-white/60 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-white">
           <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-full bg-emerald-500"></span>
-            <span className="text-slate-600 font-medium">Free</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-emerald-200"></span>
+            <span className="text-slate-600 font-semibold text-[11px]">Free</span>
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-full bg-amber-500"></span>
-            <span className="text-slate-600 font-medium">Partially Booked</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 ring-2 ring-amber-200"></span>
+            <span className="text-slate-600 font-semibold text-[11px]">Partially Booked</span>
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-full bg-purple-500"></span>
-            <span className="text-slate-600 font-medium">Full Day</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-purple-500 ring-2 ring-purple-200"></span>
+            <span className="text-slate-600 font-semibold text-[11px]">Full Day</span>
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-full bg-rose-500"></span>
-            <span className="text-slate-600 font-medium">Maintenance</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-rose-500 ring-2 ring-rose-200"></span>
+            <span className="text-slate-600 font-semibold text-[11px]">Maintenance</span>
           </span>
         </div>
       </div>
 
       {/* Summary KPI Strip */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-xs">
-          <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Total Chairs</p>
-          <p className="text-2xl font-bold text-slate-900 mt-1">{totalChairs || 100}</p>
+        <div className="p-4 sm:p-5 bg-white/75 backdrop-blur-xl rounded-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_12px_40px_rgb(79,70,229,0.08)] transition-all">
+          <p className="text-[11px] text-slate-500 uppercase tracking-wider font-bold">Total Desks</p>
+          <p className="text-2xl font-black text-slate-900 mt-1">{totalChairs || 100}</p>
         </div>
-        <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-xs">
-          <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Completely Free</p>
-          <p className="text-2xl font-bold text-emerald-600 mt-1">{completelyFreeCount}</p>
+        <div className="p-4 sm:p-5 bg-white/75 backdrop-blur-xl rounded-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_12px_40px_rgb(79,70,229,0.08)] transition-all">
+          <p className="text-[11px] text-slate-500 uppercase tracking-wider font-bold">Completely Free</p>
+          <p className="text-2xl font-black text-emerald-600 mt-1">{completelyFreeCount}</p>
         </div>
-        <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-xs">
-          <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Active Bookings</p>
-          <p className="text-2xl font-bold text-blue-600 mt-1">{occupiedAnyCount}</p>
+        <div className="p-4 sm:p-5 bg-white/75 backdrop-blur-xl rounded-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_12px_40px_rgb(79,70,229,0.08)] transition-all">
+          <p className="text-[11px] text-slate-500 uppercase tracking-wider font-bold">Active Bookings</p>
+          <p className="text-2xl font-black text-indigo-600 mt-1">{occupiedAnyCount}</p>
         </div>
-        <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-xs">
-          <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Maintenance</p>
-          <p className="text-2xl font-bold text-rose-600 mt-1">{maintenanceCount}</p>
+        <div className="p-4 sm:p-5 bg-white/75 backdrop-blur-xl rounded-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_12px_40px_rgb(79,70,229,0.08)] transition-all">
+          <p className="text-[11px] text-slate-500 uppercase tracking-wider font-bold">Under Maintenance</p>
+          <p className="text-2xl font-black text-rose-600 mt-1">{maintenanceCount}</p>
         </div>
       </div>
 

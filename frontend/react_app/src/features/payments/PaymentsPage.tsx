@@ -136,40 +136,40 @@ export const PaymentsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-200">
+      <div className="flex items-center gap-1.5 p-1 bg-white/70 backdrop-blur-xl rounded-2xl border border-white/80 shadow-[0_4px_20px_rgb(0,0,0,0.03)] w-fit">
         <button
           onClick={() => setActiveTab('collect')}
-          className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all flex items-center gap-1.5 ${
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
             activeTab === 'collect'
-              ? 'border-blue-600 text-blue-600'
-              : 'border-transparent text-slate-500 hover:text-slate-900'
+              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-indigo-500/20'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
           }`}
         >
           <Coins size={14} />
-          <span>Collect Dues Installments</span>
+          <span>Collect Dues</span>
         </button>
         <button
           onClick={() => setActiveTab('ledger')}
-          className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all flex items-center gap-1.5 ${
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
             activeTab === 'ledger'
-              ? 'border-blue-600 text-blue-600'
-              : 'border-transparent text-slate-500 hover:text-slate-900'
+              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-indigo-500/20'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
           }`}
         >
           <Receipt size={14} />
-          <span>Payment Ledger & Receipts</span>
+          <span>Payment Ledger</span>
         </button>
         {user?.role === 'ADMIN' && (
           <button
             onClick={() => setActiveTab('void')}
-            className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all flex items-center gap-1.5 ${
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
               activeTab === 'void'
-                ? 'border-rose-600 text-rose-600'
-                : 'border-transparent text-slate-500 hover:text-slate-900'
+                ? 'bg-gradient-to-r from-rose-600 to-red-600 text-white shadow-md shadow-rose-500/20'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
             }`}
           >
             <ShieldBan size={14} />
-            <span>Void Payment (Admin)</span>
+            <span>Void Transaction</span>
           </button>
         )}
       </div>
@@ -178,13 +178,13 @@ export const PaymentsPage: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Due Accounts List */}
           <div className="lg:col-span-1 space-y-3">
-            <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+            <h3 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
               Pending Dues Accounts ({dueMemberships.length})
             </h3>
             {isMemLoading ? (
               <div className="p-8 text-center text-xs text-slate-400">Loading dues...</div>
             ) : dueMemberships.length === 0 ? (
-              <div className="p-8 text-center text-xs text-emerald-600 bg-emerald-50 rounded-xl border border-emerald-200 font-medium">
+              <div className="p-8 text-center text-xs text-emerald-700 bg-emerald-50/80 rounded-2xl border border-emerald-200/80 font-bold backdrop-blur-md">
                 Zero outstanding dues across all active subscriptions!
               </div>
             ) : (
@@ -193,17 +193,17 @@ export const PaymentsPage: React.FC = () => {
                   <button
                     key={m.id}
                     onClick={() => handleSelectDueMem(m)}
-                    className={`w-full p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
+                    className={`w-full p-4 rounded-2xl border text-left transition-all cursor-pointer ${
                       selectedDueMem?.id === m.id
-                        ? 'bg-blue-50/80 border-blue-400 shadow-xs'
-                        : 'bg-white border-slate-200 hover:border-slate-300'
+                        ? 'bg-indigo-50/90 border-indigo-300 shadow-sm'
+                        : 'bg-white/75 backdrop-blur-xl border-white/80 hover:bg-white hover:border-slate-200 shadow-[0_4px_20px_rgb(0,0,0,0.02)]'
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-bold text-slate-900 text-xs">{m.student_name}</span>
-                      <span className="font-bold text-rose-600 text-xs">{formatCurrencyINR(m.due_amount)}</span>
+                      <span className="font-black text-rose-600 text-xs">{formatCurrencyINR(m.due_amount)}</span>
                     </div>
-                    <p className="text-[11px] text-slate-500 mt-0.5">
+                    <p className="text-[11px] text-slate-500 mt-1 font-medium">
                       Seat #{m.seat_number} • {m.shift_name}
                     </p>
                   </button>
@@ -229,32 +229,32 @@ export const PaymentsPage: React.FC = () => {
                 {selectedDueMem ? (
                   <form onSubmit={handlePaymentSubmit} className="space-y-4 text-xs">
                     {payError && (
-                      <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 font-medium">
+                      <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 font-medium">
                         {payError}
                       </div>
                     )}
 
                     {/* Balance Overview */}
-                    <div className="grid grid-cols-3 gap-3 p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+                    <div className="grid grid-cols-3 gap-3 p-4 bg-white/70 backdrop-blur-md rounded-2xl border border-white/90 shadow-2xs">
                       <div>
-                        <p className="text-slate-400 font-semibold uppercase text-[10px]">Total Contract Fee</p>
-                        <p className="font-bold text-slate-900 mt-0.5">{formatCurrencyINR(selectedDueMem.final_fee)}</p>
+                        <p className="text-slate-400 font-bold uppercase text-[10px]">Total Contract Fee</p>
+                        <p className="font-black text-slate-900 mt-0.5">{formatCurrencyINR(selectedDueMem.final_fee)}</p>
                       </div>
                       <div>
-                        <p className="text-slate-400 font-semibold uppercase text-[10px]">Already Paid</p>
-                        <p className="font-bold text-emerald-600 mt-0.5">
+                        <p className="text-slate-400 font-bold uppercase text-[10px]">Already Paid</p>
+                        <p className="font-black text-emerald-600 mt-0.5">
                           {formatCurrencyINR(selectedDueMem.total_paid)}
                         </p>
                       </div>
                       <div>
-                        <p className="text-slate-400 font-semibold uppercase text-[10px]">Pending Due</p>
-                        <p className="font-bold text-rose-600 mt-0.5">{formatCurrencyINR(selectedDueMem.due_amount)}</p>
+                        <p className="text-slate-400 font-bold uppercase text-[10px]">Pending Due</p>
+                        <p className="font-black text-rose-600 mt-0.5">{formatCurrencyINR(selectedDueMem.due_amount)}</p>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <label className="font-semibold text-slate-700">Payment Amount (₹) *</label>
+                      <div className="space-y-1.5">
+                        <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Payment Amount (₹) *</label>
                         <input
                           type="number"
                           required

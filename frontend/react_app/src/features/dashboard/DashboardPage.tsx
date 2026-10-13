@@ -115,29 +115,33 @@ export const DashboardPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Top Controls Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-[#0e1629] p-4 rounded-xl border border-white/[0.07]">
-        <div className="flex items-center gap-2">
-          <Calendar size={18} className="text-indigo-400 shrink-0" />
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Audit Date:</span>
-          <input
-            type="date"
-            value={targetDate}
-            onChange={(e) => setTargetDate(e.target.value)}
-            className="px-2.5 py-1.5 rounded-lg border border-white/[0.1] bg-slate-900 text-xs font-medium text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 [color-scheme:dark]"
-          />
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white/70 backdrop-blur-xl p-4 rounded-2xl border border-white/80 shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100/80 shadow-xs">
+            <Calendar size={18} />
+          </div>
+          <div>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block leading-none">Audit Date</span>
+            <input
+              type="date"
+              value={targetDate}
+              onChange={(e) => setTargetDate(e.target.value)}
+              className="mt-1 px-3 py-1.5 rounded-xl border border-slate-200/80 bg-white/90 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 shadow-xs"
+            />
+          </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <Link
             to="/memberships"
-            className="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white text-xs font-semibold shadow-lg shadow-indigo-500/20 transition-all flex items-center gap-1.5"
+            className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/35 transition-all flex items-center gap-1.5 cursor-pointer"
           >
             <span>New Admission</span>
             <ArrowUpRight size={14} />
           </Link>
           <Link
             to="/attendance"
-            className="px-3.5 py-1.5 rounded-lg bg-white/[0.06] hover:bg-white/[0.10] text-slate-300 text-xs font-semibold transition-all border border-white/[0.08]"
+            className="px-4 py-2 rounded-xl bg-white/80 hover:bg-white text-slate-700 text-xs font-bold transition-all border border-slate-200/80 shadow-xs hover:shadow-md"
           >
             Check-In Desk
           </Link>
@@ -192,14 +196,22 @@ export const DashboardPage: React.FC = () => {
             ) : capacityComparisonData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={capacityComparisonData} margin={{ top: 20, right: 20, left: -10, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1e2d4a" />
-                  <XAxis dataKey="name" stroke="#475569" fontSize={11} tickLine={false} />
-                  <YAxis stroke="#475569" fontSize={11} domain={[0, 100]} unit="%" tickLine={false} />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis dataKey="name" stroke="#64748b" fontSize={11} tickLine={false} />
+                  <YAxis stroke="#64748b" fontSize={11} domain={[0, 100]} unit="%" tickLine={false} />
                   <Tooltip
                     formatter={(val: any) => [`${val}%`, 'Occupancy Rate']}
-                    contentStyle={{ borderRadius: '10px', border: '1px solid rgba(255,255,255,0.08)', fontSize: '12px', background: '#0e1629', color: '#e2e8f0' }}
+                    contentStyle={{
+                      borderRadius: '14px',
+                      border: '1px solid rgba(255,255,255,0.9)',
+                      fontSize: '12px',
+                      background: 'rgba(255,255,255,0.95)',
+                      backdropFilter: 'blur(12px)',
+                      boxShadow: '0 10px 25px -5px rgba(0,0,0,0.08)',
+                      color: '#0f172a',
+                    }}
                   />
-                  <Bar dataKey="rate" fill="#3b82f6" radius={[6, 6, 0, 0]} maxBarSize={48}>
+                  <Bar dataKey="rate" fill="#4f46e5" radius={[8, 8, 0, 0]} maxBarSize={48}>
                     {capacityComparisonData.map((_, idx) => (
                       <Cell key={`cell-${idx}`} fill={SHIFT_COLORS[idx % SHIFT_COLORS.length]} />
                     ))}
@@ -230,7 +242,7 @@ export const DashboardPage: React.FC = () => {
                     data={shiftChartData}
                     innerRadius={60}
                     outerRadius={95}
-                    paddingAngle={3}
+                    paddingAngle={4}
                     dataKey="value"
                     nameKey="name"
                     label={({ name, percent }: { name?: string; percent?: number }) => `${name}: ${((percent || 0) * 100).toFixed(0)}%`}
@@ -242,7 +254,15 @@ export const DashboardPage: React.FC = () => {
                   </Pie>
                   <Tooltip
                     formatter={(val: any) => [val, 'Students']}
-                    contentStyle={{ borderRadius: '10px', border: '1px solid rgba(255,255,255,0.08)', fontSize: '12px', background: '#0e1629', color: '#e2e8f0' }}
+                    contentStyle={{
+                      borderRadius: '14px',
+                      border: '1px solid rgba(255,255,255,0.9)',
+                      fontSize: '12px',
+                      background: 'rgba(255,255,255,0.95)',
+                      backdropFilter: 'blur(12px)',
+                      boxShadow: '0 10px 25px -5px rgba(0,0,0,0.08)',
+                      color: '#0f172a',
+                    }}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -258,14 +278,16 @@ export const DashboardPage: React.FC = () => {
       {/* Action Queue: Expiring Subscriptions Alert */}
       <Card>
         <CardHeader>
-          <div className="flex items-center gap-2">
-            <AlertTriangle size={18} className="text-amber-500" />
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-amber-50 text-amber-600 border border-amber-100">
+              <AlertTriangle size={18} />
+            </div>
             <div>
               <CardTitle>Renewal Action Queue</CardTitle>
               <CardDescription>Aspirants expiring within the next 3 calendar days</CardDescription>
             </div>
           </div>
-          <Link to="/memberships" className="text-xs font-semibold text-blue-600 hover:text-blue-700">
+          <Link to="/memberships" className="text-xs font-bold text-indigo-600 hover:text-indigo-700 transition-colors">
             View All Renewals →
           </Link>
         </CardHeader>
@@ -274,20 +296,20 @@ export const DashboardPage: React.FC = () => {
             <div className="p-8 text-center text-xs text-slate-400">Scanning active tenures...</div>
           ) : expiringList && expiringList.length > 0 ? (
             <table className="w-full text-left text-xs">
-              <thead className="bg-white/[0.03] border-b border-white/[0.07] text-slate-500 font-semibold uppercase tracking-wider">
+              <thead className="bg-slate-50/70 border-b border-slate-100 text-slate-500 font-bold uppercase tracking-wider">
                 <tr>
-                  <th className="py-3 px-4">Urgency</th>
-                  <th className="py-3 px-4">Student</th>
-                  <th className="py-3 px-4">Mobile</th>
-                  <th className="py-3 px-4">Desk</th>
-                  <th className="py-3 px-4">Shift</th>
-                  <th className="py-3 px-4">Expires On</th>
-                  <th className="py-3 px-4 text-right">Pending Due</th>
+                  <th className="py-3.5 px-4">Urgency</th>
+                  <th className="py-3.5 px-4">Student</th>
+                  <th className="py-3.5 px-4">Mobile</th>
+                  <th className="py-3.5 px-4">Desk</th>
+                  <th className="py-3.5 px-4">Shift</th>
+                  <th className="py-3.5 px-4">Expires On</th>
+                  <th className="py-3.5 px-4 text-right">Pending Due</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/[0.04] text-slate-300 font-medium">
+              <tbody className="divide-y divide-slate-100 text-slate-700 font-medium">
                 {expiringList.map((item) => (
-                  <tr key={item.membership_id} className="hover:bg-white/[0.03] transition-colors">
+                  <tr key={item.membership_id} className="hover:bg-indigo-50/40 transition-colors">
                     <td className="py-3 px-4">
                       {item.days_remaining <= 1 ? (
                         <Badge variant="danger">{item.days_remaining} Day Left</Badge>
@@ -295,12 +317,12 @@ export const DashboardPage: React.FC = () => {
                         <Badge variant="warning">{item.days_remaining} Days Left</Badge>
                       )}
                     </td>
-                    <td className="py-3 px-4 font-semibold text-white">{item.student_name}</td>
-                    <td className="py-3 px-4 font-mono text-slate-400">{item.student_mobile}</td>
-                    <td className="py-3 px-4">Seat #{item.seat_number}</td>
-                    <td className="py-3 px-4">{item.shift_name}</td>
-                    <td className="py-3 px-4">{formatDate(item.end_date)}</td>
-                    <td className="py-3 px-4 text-right font-bold text-slate-900">
+                    <td className="py-3 px-4 font-bold text-slate-900">{item.student_name}</td>
+                    <td className="py-3 px-4 font-mono text-slate-500">{item.student_mobile}</td>
+                    <td className="py-3 px-4 font-semibold text-slate-800">Seat #{item.seat_number}</td>
+                    <td className="py-3 px-4 text-slate-600">{item.shift_name}</td>
+                    <td className="py-3 px-4 text-slate-600">{formatDate(item.end_date)}</td>
+                    <td className="py-3 px-4 text-right font-black text-rose-600">
                       {formatCurrencyINR(item.due_amount)}
                     </td>
                   </tr>

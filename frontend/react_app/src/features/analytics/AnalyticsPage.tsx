@@ -29,7 +29,7 @@ import {
   Cell,
 } from 'recharts'
 
-const METHOD_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6']
+const METHOD_COLORS = ['#4f46e5', '#06b6d4', '#f59e0b', '#8b5cf6']
 
 export const AnalyticsPage: React.FC = () => {
   const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0]
@@ -64,23 +64,23 @@ export const AnalyticsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Date Range Selector */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-white/75 backdrop-blur-xl p-4 sm:p-5 rounded-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
         <div className="flex flex-wrap items-center gap-3">
-          <Calendar size={18} className="text-blue-600" />
-          <span className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Date Horizon:</span>
+          <Calendar size={18} className="text-indigo-600" />
+          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Date Horizon:</span>
           <div className="flex items-center gap-2">
             <input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-1.5 rounded-xl border border-slate-200/90 bg-white/90 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-2xs"
             />
-            <span className="text-xs text-slate-400">to</span>
+            <span className="text-xs text-slate-400 font-bold">to</span>
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-1.5 rounded-xl border border-slate-200/90 bg-white/90 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-2xs"
             />
           </div>
         </div>
@@ -89,7 +89,7 @@ export const AnalyticsPage: React.FC = () => {
           href={paymentsApi.exportRevenueCsv(startDate, endDate)}
           target="_blank"
           rel="noreferrer"
-          className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-colors flex items-center justify-center gap-1.5 shrink-0"
+          className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-500/20 transition-all flex items-center justify-center gap-2 shrink-0 cursor-pointer active:scale-[0.99]"
         >
           <FileDown size={14} />
           <span>Export Revenue Report (CSV)</span>
@@ -150,9 +150,18 @@ export const AnalyticsPage: React.FC = () => {
                       <YAxis stroke="#64748b" fontSize={11} tickLine={false} tickFormatter={(val) => `₹${val}`} />
                       <Tooltip
                         formatter={(val: any) => [formatCurrencyINR(val), 'Revenue']}
-                        contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '12px' }}
+                        contentStyle={{
+                          borderRadius: '16px',
+                          border: '1px solid rgba(255,255,255,0.9)',
+                          background: 'rgba(255,255,255,0.88)',
+                          backdropFilter: 'blur(16px)',
+                          boxShadow: '0 12px 30px rgba(79,70,229,0.1)',
+                          fontSize: '12px',
+                          fontWeight: 700,
+                          color: '#0f172a',
+                        }}
                       />
-                      <Bar dataKey="revenue" fill="#3b82f6" radius={[6, 6, 0, 0]} maxBarSize={48}>
+                      <Bar dataKey="revenue" fill="#4f46e5" radius={[8, 8, 0, 0]} maxBarSize={48}>
                         {methodChartData.map((_, idx) => (
                           <Cell key={`bar-${idx}`} fill={METHOD_COLORS[idx % METHOD_COLORS.length]} />
                         ))}
@@ -185,7 +194,7 @@ export const AnalyticsPage: React.FC = () => {
                         data={methodChartData}
                         innerRadius={55}
                         outerRadius={90}
-                        paddingAngle={3}
+                        paddingAngle={4}
                         dataKey="revenue"
                         nameKey="method"
                         label={({ method, percent }: { method?: string; percent?: number }) => `${method}: ${((percent || 0) * 100).toFixed(0)}%`}
@@ -197,7 +206,16 @@ export const AnalyticsPage: React.FC = () => {
                       </Pie>
                       <Tooltip
                         formatter={(val: any) => [formatCurrencyINR(val), 'Collected']}
-                        contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '12px' }}
+                        contentStyle={{
+                          borderRadius: '16px',
+                          border: '1px solid rgba(255,255,255,0.9)',
+                          background: 'rgba(255,255,255,0.88)',
+                          backdropFilter: 'blur(16px)',
+                          boxShadow: '0 12px 30px rgba(79,70,229,0.1)',
+                          fontSize: '12px',
+                          fontWeight: 700,
+                          color: '#0f172a',
+                        }}
                       />
                     </PieChart>
                   </ResponsiveContainer>

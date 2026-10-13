@@ -119,14 +119,14 @@ export const AttendancePage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Tab Navigation */}
-      <div className="flex items-center gap-2 border-b border-slate-200">
+      {/* Tab Navigation Pill Bar */}
+      <div className="flex items-center gap-1.5 p-1 bg-white/70 backdrop-blur-xl rounded-2xl border border-white/80 shadow-[0_4px_20px_rgb(0,0,0,0.03)] w-fit">
         <button
           onClick={() => setActiveTab('terminal')}
-          className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all flex items-center gap-1.5 ${
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
             activeTab === 'terminal'
-              ? 'border-blue-600 text-blue-600'
-              : 'border-transparent text-slate-500 hover:text-slate-900'
+              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-indigo-500/20'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
           }`}
         >
           <LogIn size={14} />
@@ -134,10 +134,10 @@ export const AttendancePage: React.FC = () => {
         </button>
         <button
           onClick={() => setActiveTab('roster')}
-          className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all flex items-center gap-1.5 ${
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
             activeTab === 'roster'
-              ? 'border-blue-600 text-blue-600'
-              : 'border-transparent text-slate-500 hover:text-slate-900'
+              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-indigo-500/20'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
           }`}
         >
           <Calendar size={14} />
@@ -157,24 +157,24 @@ export const AttendancePage: React.FC = () => {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleStudentSearch} className="space-y-4 text-xs">
-                <div className="space-y-1">
-                  <label className="font-semibold text-slate-700">Mobile or Aspirant Name *</label>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Mobile or Aspirant Name *</label>
                   <div className="relative">
-                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                     <input
                       type="text"
                       required
                       placeholder="e.g. 9876543210 or Rahul"
                       value={searchMobileOrName}
                       onChange={(e) => setSearchMobileOrName(e.target.value)}
-                      className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-slate-300 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200/90 bg-white/90 text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-2xs"
                     />
                   </div>
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full py-2.5 px-4 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-semibold transition-colors flex items-center justify-center gap-2"
+                  className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md shadow-indigo-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]"
                 >
                   <Search size={14} />
                   <span>Lookup Student Account</span>
@@ -195,29 +195,29 @@ export const AttendancePage: React.FC = () => {
               {matchedStudent ? (
                 <div className="space-y-4 text-xs">
                   {/* Student Profile Card */}
-                  <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+                  <div className="p-4 bg-white/70 backdrop-blur-md rounded-2xl border border-white/90 shadow-2xs space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-slate-900 text-sm">{matchedStudent.full_name}</span>
-                      <span className="font-mono text-slate-500">{matchedStudent.student_code}</span>
+                      <span className="font-black text-slate-900 text-sm">{matchedStudent.full_name}</span>
+                      <span className="font-mono font-bold text-indigo-600">{matchedStudent.student_code}</span>
                     </div>
-                    <p className="text-slate-600">Mobile: {matchedStudent.mobile_number || matchedStudent.mobile}</p>
+                    <p className="text-slate-600 font-medium">Mobile: {matchedStudent.mobile_number || matchedStudent.mobile}</p>
 
                     {activeMembership ? (
-                      <div className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 font-medium flex items-center justify-between">
+                      <div className="p-2.5 rounded-xl bg-emerald-50/80 border border-emerald-200/80 text-emerald-800 font-bold flex items-center justify-between">
                         <span>
                           Assigned: <strong>Seat #{activeMembership.seat_number}</strong> ({activeMembership.shift_name})
                         </span>
                         <Badge variant="success">ACTIVE</Badge>
                       </div>
                     ) : (
-                      <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 font-medium">
+                      <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 font-medium">
                         No active subscription booked for today.
                       </div>
                     )}
                   </div>
 
                   {searchMessage && (
-                    <div className="p-3 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 font-medium">
+                    <div className="p-3.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 font-medium">
                       {searchMessage}
                     </div>
                   )}
@@ -234,7 +234,7 @@ export const AttendancePage: React.FC = () => {
                               membership_id: activeMembership.id,
                             })
                           }
-                          className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-xs transition-colors flex items-center justify-center gap-2"
+                          className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]"
                         >
                           {checkInMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <LogIn size={16} />}
                           <span>Record Check-In (Student Arrival)</span>
@@ -243,7 +243,7 @@ export const AttendancePage: React.FC = () => {
                         <button
                           disabled={checkOutMutation.isPending}
                           onClick={() => checkOutMutation.mutate(currentStudentRecord.id)}
-                          className="w-full py-3 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm shadow-xs transition-colors flex items-center justify-center gap-2"
+                          className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-bold text-xs shadow-lg shadow-rose-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]"
                         >
                           {checkOutMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <LogOut size={16} />}
                           <span>Record Check-Out (Student Departure)</span>
@@ -271,22 +271,22 @@ export const AttendancePage: React.FC = () => {
       ) : (
         /* Daily Roster View */
         <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-white/75 backdrop-blur-xl p-4 sm:p-5 rounded-2xl border border-white/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
             <div className="flex items-center gap-2">
-              <Calendar size={18} className="text-blue-600" />
-              <span className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Roster Date:</span>
+              <Calendar size={18} className="text-indigo-600" />
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Roster Date:</span>
               <input
                 type="date"
                 value={rosterDate}
                 onChange={(e) => setRosterDate(e.target.value)}
-                className="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-3 py-1.5 rounded-xl border border-slate-200/90 bg-white/90 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-2xs"
               />
             </div>
 
-            <div className="flex items-center gap-4 text-xs">
-              <span className="text-slate-600">Total Check-Ins: <strong className="text-slate-900">{dailyRoster.length}</strong></span>
-              <span className="text-emerald-600 font-medium">Currently in Center: <strong className="text-emerald-700">{totalPresent}</strong></span>
-              <span className="text-slate-500">Departed: <strong>{totalDeparted}</strong></span>
+            <div className="flex items-center gap-4 text-xs bg-white/60 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-white">
+              <span className="text-slate-600 font-semibold">Total Logs: <strong className="text-slate-900 font-black">{dailyRoster.length}</strong></span>
+              <span className="text-emerald-700 font-bold">Currently in Center: <strong className="text-emerald-800 font-black">{totalPresent}</strong></span>
+              <span className="text-slate-500 font-semibold">Departed: <strong className="text-slate-700 font-black">{totalDeparted}</strong></span>
             </div>
           </div>
 
@@ -300,7 +300,7 @@ export const AttendancePage: React.FC = () => {
                 <EmptyState title="No attendance logs" description={`Zero attendance check-ins logged for ${rosterDate}.`} />
               ) : (
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider">
+                  <thead className="bg-slate-50/80 border-b border-slate-100 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
                     <tr>
                       <th className="py-3 px-4">Student</th>
                       <th className="py-3 px-4">Desk</th>
@@ -313,14 +313,14 @@ export const AttendancePage: React.FC = () => {
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-slate-700 font-medium">
                     {dailyRoster.map((r) => (
-                      <tr key={r.id} className="hover:bg-slate-50/60 transition-colors">
-                        <td className="py-3 px-4 font-bold text-slate-900">{r.student_name || 'Aspirant'}</td>
-                        <td className="py-3 px-4 font-bold">Seat #{r.seat_number || r.seat_id || '—'}</td>
-                        <td className="py-3 px-4">{r.shift_name || '—'}</td>
-                        <td className="py-3 px-4 font-mono text-slate-600">{r.check_in ? r.check_in.substring(11, 19) : '—'}</td>
-                        <td className="py-3 px-4 font-mono text-slate-600">{r.check_out ? r.check_out.substring(11, 19) : '—'}</td>
-                        <td className="py-3 px-4">{r.duration_hours !== null && r.duration_hours !== undefined ? `${r.duration_hours} hrs` : 'In Progress'}</td>
-                        <td className="py-3 px-4">
+                      <tr key={r.id} className="hover:bg-slate-50/50 transition-colors">
+                        <td className="py-3.5 px-4 font-bold text-slate-900">{r.student_name || 'Aspirant'}</td>
+                        <td className="py-3.5 px-4 font-bold text-indigo-600">Seat #{r.seat_number || r.seat_id || '—'}</td>
+                        <td className="py-3.5 px-4 text-slate-600">{r.shift_name || '—'}</td>
+                        <td className="py-3.5 px-4 font-mono font-medium text-slate-700">{r.check_in ? r.check_in.substring(11, 19) : '—'}</td>
+                        <td className="py-3.5 px-4 font-mono font-medium text-slate-700">{r.check_out ? r.check_out.substring(11, 19) : '—'}</td>
+                        <td className="py-3.5 px-4 text-slate-600">{r.duration_hours !== null && r.duration_hours !== undefined ? `${r.duration_hours} hrs` : 'In Progress'}</td>
+                        <td className="py-3.5 px-4">
                           <Badge variant={r.status === 'PRESENT' ? 'success' : 'neutral'}>
                             {r.status === 'PRESENT' ? 'In Facility' : 'Departed'}
                           </Badge>
